@@ -86,7 +86,7 @@ export function DailyEntryForm({ date, dayOfWeek, existing, onSubmit }: Props) {
   );
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader><CardTitle>Today's Sadhana</CardTitle></CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-3">
@@ -112,9 +112,9 @@ export function DailyEntryForm({ date, dayOfWeek, existing, onSubmit }: Props) {
                 <button key={key as string} type="button" aria-pressed={on}
                   onClick={() => set({ [key]: !on } as Partial<DailyEntry>)}
                   className={cn(
-                    "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                    "pressable min-h-10 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-accent",
+                    on ? "border-primary bg-primary text-primary-foreground shadow-[0_8px_18px_hsl(82_24%_24%_/_0.18)]" : "border-white/40 bg-card/60 hover:bg-accent",
                   )}>
                   {label}
                 </button>
@@ -143,7 +143,7 @@ export function DailyEntryForm({ date, dayOfWeek, existing, onSubmit }: Props) {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3 rounded-md bg-secondary px-3 py-2 text-xs text-muted-foreground">
+          <div className="glass-control flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-success" />
               {draftSavedAt ? "Progress saved on this device" : "Progress saves on this device"}

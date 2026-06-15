@@ -72,14 +72,14 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="glass-control flex items-center justify-between rounded-2xl p-2">
         <Button variant="ghost" size="icon" aria-label="Previous day"
           onClick={() => setDate((d) => addDays(d, -1))}>
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <div className="text-center">
-          <div className="font-display text-xl font-semibold">{format(date, "EEEE")}</div>
-          <div className="text-xs text-muted-foreground">{format(date, "MMMM d, yyyy")}</div>
+          <div className="font-display text-2xl font-semibold leading-none">{format(date, "EEEE")}</div>
+          <div className="mt-1 text-xs font-medium text-muted-foreground">{format(date, "MMMM d, yyyy")}</div>
         </div>
         <Button variant="ghost" size="icon" aria-label="Next day"
           onClick={() => setDate((d) => addDays(d, 1))}>
@@ -90,7 +90,15 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
       {pramana && <MotivationBanner pramana={pramana} />}
 
       {!loaded ? (
-        <div className="py-10 text-center text-muted-foreground">Loading…</div>
+        <div className="glass-card space-y-4 rounded-2xl p-5">
+          <div className="h-5 w-28 animate-pulse rounded-full bg-secondary" />
+          <div className="h-10 w-52 animate-pulse rounded-md bg-secondary" />
+          <div className="grid grid-cols-3 gap-2">
+            <div className="h-20 animate-pulse rounded-lg bg-secondary/80" />
+            <div className="h-20 animate-pulse rounded-lg bg-secondary/80" />
+            <div className="h-20 animate-pulse rounded-lg bg-secondary/80" />
+          </div>
+        </div>
       ) : (
         <>
           <DailyOverview entry={existing} weekEntries={weekEntries} />

@@ -25,10 +25,7 @@ function Stat({
   tone?: "default" | "success";
 }) {
   return (
-    <div className={cn(
-      "rounded-md border border-white/35 bg-card/55 p-3 shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]",
-      tone === "success" && "bg-success/15",
-    )}>
+    <div className={cn("glass-control rounded-xl p-3", tone === "success" && "bg-success/15")}>
       <div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
       <div className="mt-1 text-xl font-semibold tabular-nums text-foreground">{value}</div>
     </div>
@@ -43,7 +40,7 @@ export function DailyOverview({ entry, weekEntries }: Props) {
   const complete = !!entry;
 
   return (
-    <Card className="overflow-hidden border-primary/20 bg-[linear-gradient(145deg,hsl(42_28%_96%),hsl(82_20%_82%_/_0.58))] shadow-lift">
+    <Card className="overflow-hidden rounded-3xl border-primary/20 bg-[linear-gradient(145deg,hsl(42_28%_96%_/_0.92),hsl(82_20%_82%_/_0.62))] shadow-lift">
       <CardContent className="space-y-5 p-5">
         <div>
           <div className="text-sm font-semibold text-muted-foreground">
@@ -75,7 +72,7 @@ export function DailyOverview({ entry, weekEntries }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-md bg-foreground/5 px-3 py-2 text-xs font-medium text-muted-foreground">
+        <div className="glass-control flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
           Saved entries stay private on this device unless you choose cloud sync.
         </div>

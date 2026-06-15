@@ -29,10 +29,10 @@ function ScoreChip({ score }: { score: number }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium",
+        "inline-flex items-center rounded-full border border-white/35 px-3 py-1 text-sm font-semibold shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]",
         score >= 20 ? "bg-success/15 text-success" :
         score >= 10 ? "bg-accent text-accent-foreground" :
-        "bg-secondary text-secondary-foreground",
+        "bg-secondary/80 text-secondary-foreground",
       )}
     >
       {score >= 0 ? `+${score}` : score} marks
@@ -206,11 +206,11 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
                     aria-pressed={on}
                     onClick={() => set({ [key]: !on } as Partial<DailyEntry>)}
                     className={cn(
-                      "rounded-full border px-4 py-2 text-sm transition-colors",
+                    "pressable min-h-10 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       on
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card hover:bg-accent",
+                        ? "border-primary bg-primary text-primary-foreground shadow-[0_8px_18px_hsl(82_24%_24%_/_0.18)]"
+                        : "border-white/40 bg-card/60 hover:bg-accent",
                     )}
                   >
                     {label}
@@ -243,17 +243,17 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
           <div className="space-y-5 text-center">
             <h2 className="font-display text-3xl font-semibold">Review and offer</h2>
             <div className="grid grid-cols-3 gap-3 text-sm">
-              <div className="rounded-md bg-secondary p-3">
+              <div className="glass-control rounded-xl p-3">
                 <div className="text-muted-foreground">Wake</div>
                 <div className="text-lg font-semibold">{entry.wakeUpTime ?? "–"}</div>
                 <ScoreChip score={entry.wakeUpScore} />
               </div>
-              <div className="rounded-md bg-secondary p-3">
+              <div className="glass-control rounded-xl p-3">
                 <div className="text-muted-foreground">Japa</div>
                 <div className="text-lg font-semibold">{entry.japaCompletionTime ?? "–"}</div>
                 <ScoreChip score={entry.japaScore} />
               </div>
-              <div className="rounded-md bg-secondary p-3">
+              <div className="glass-control rounded-xl p-3">
                 <div className="text-muted-foreground">Bed</div>
                 <div className="text-lg font-semibold">{entry.bedTime ?? "–"}</div>
                 <ScoreChip score={entry.bedTimeScore} />
@@ -291,11 +291,11 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary" role="progressbar"
+      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/70 shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]" role="progressbar"
         aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(43_42%_46%))] transition-all" style={{ width: `${progress}%` }} />
       </div>
-      <div className="flex items-center justify-between gap-3 rounded-md bg-secondary px-3 py-2 text-xs text-muted-foreground">
+      <div className="glass-control flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <CheckCircle2 className="h-3.5 w-3.5 text-success" />
           {draftSavedAt ? "Progress saved on this device" : "Progress saves on this device"}
@@ -304,13 +304,13 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
           Save
         </Button>
       </div>
-      <Card>
+      <Card className="rounded-3xl">
         <CardContent className="relative pt-8">
           {stepIndex > 0 && (
             <button
               onClick={back}
               aria-label="Back"
-              className="absolute left-4 top-4 rounded-md p-2 text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="pressable glass-control absolute left-4 top-4 rounded-md p-2 text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>

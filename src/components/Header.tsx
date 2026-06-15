@@ -20,7 +20,7 @@ export function Header({
   ] as const;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/35 bg-background/80 shadow-[0_10px_30px_hsl(40_18%_18%_/_0.08)] backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-white/35 bg-background/72 shadow-[0_12px_32px_hsl(40_18%_18%_/_0.10)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/58">
       <div className="relative mx-auto max-w-lg px-4 pb-3 pt-4">
         {/* lotus watermark */}
         <svg aria-hidden viewBox="0 0 100 60" className="pointer-events-none absolute right-2 top-1 h-14 w-24 opacity-[0.07]">
@@ -29,13 +29,13 @@ export function Header({
         </svg>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg border border-white/45 bg-primary text-primary-foreground shadow-lift">
+            <div className="glass-control grid h-11 w-11 place-items-center rounded-xl bg-primary/90 text-primary-foreground shadow-lift">
               <FileText className="h-5 w-5" />
             </div>
             <div>
-            <h1 className="font-display text-3xl font-semibold leading-none">Sadhana Card</h1>
+            <h1 className="font-display text-[1.95rem] font-semibold leading-none">Sadhana Card</h1>
             {isGuest && (
-              <span className="mt-1 inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+              <span className="glass-control mt-1 inline-flex min-h-6 items-center rounded-full px-2.5 text-xs font-semibold text-secondary-foreground">
                 Guest
               </span>
             )}
@@ -50,15 +50,15 @@ export function Header({
             </Button>
           </div>
         </div>
-        <nav className="mt-4 grid grid-cols-3 gap-2 rounded-lg border border-white/35 bg-card/55 p-1 shadow-[0_1px_0_hsl(0_0%_100%_/_0.4)_inset]" aria-label="Views">
+        <nav className="glass-control mt-4 grid grid-cols-3 gap-1 rounded-xl p-1" aria-label="Views">
           {nav.map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => onViewChange(key)} aria-current={view === key ? "page" : undefined}
               className={cn(
-                "inline-flex items-center justify-center gap-1.5 rounded-md py-2 text-sm font-semibold transition-all",
+                "pressable inline-flex min-h-10 touch-manipulation items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm font-semibold transition-all",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 view === key
-                  ? "bg-primary text-primary-foreground shadow-[0_8px_18px_hsl(82_24%_24%_/_0.20)]"
-                  : "text-secondary-foreground hover:bg-accent",
+                  ? "bg-primary text-primary-foreground shadow-[0_10px_20px_hsl(82_24%_24%_/_0.22),0_1px_0_hsl(0_0%_100%_/_0.22)_inset]"
+                  : "text-secondary-foreground hover:bg-card/70",
               )}>
               <Icon className="h-3.5 w-3.5" />
               {label}
