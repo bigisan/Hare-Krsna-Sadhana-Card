@@ -22,12 +22,12 @@ export function Sheet({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-foreground/30" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-foreground/25 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div
         role="dialog"
         aria-label={title}
         className={cn(
-          "absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border bg-card p-8 shadow-soft",
+          "glass-panel safe-bottom-padding absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-3xl p-6 shadow-lift",
           "sm:inset-y-0 sm:left-auto sm:right-0 sm:w-96 sm:rounded-none sm:rounded-l-2xl",
         )}
       >
@@ -36,7 +36,7 @@ export function Sheet({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="pressable glass-control rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-5 w-5" />
           </button>
