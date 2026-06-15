@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DailyWizard } from "@/components/DailyWizard";
 import { DailyEntryForm } from "@/components/DailyEntryForm";
+import { DailyOverview } from "@/components/DailyOverview";
 import { MotivationBanner } from "@/components/MotivationBanner";
 import { DailyEntry, compareWeeks } from "@/lib/sadhana-types";
 import {
@@ -15,22 +16,32 @@ import { bannerPramana, Pramana } from "@/lib/pramanas";
 export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: boolean }) {
   const [date, setDate] = useState(() => new Date());
   const [existing, setExisting] = useState<DailyEntry | null>(null);
+  const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [pramana, setPramana] = useState<Pramana | null>(null);
 
   const dateStr = format(date, "yyyy-MM-dd");
   const dayOfWeek = format(date, "EEE").toUpperCase();
+  const selectedWeekStart = useMemo(() => startOfWeek(date, { weekStartsOn: 0 }), [date]);
+  const selectedWeekStartStr = format(selectedWeekStart, "yyyy-MM-dd");
 
   useEffect(() => {
     let cancelled = false;
     setLoaded(false);
-    getDailyEntry(ctx, dateStr)
-      .then((e) => { if (!cancelled) setExisting(e); })
+    Promise.all([
+      getDailyEntry(ctx, dateStr),
+      getEntriesForWeek(ctx, selectedWeekStartStr),
+    ])
+      .then(([dayEntry, entries]) => {
+        if (cancelled) return;
+        setExisting(dayEntry);
+        setWeekEntries(entries);
+      })
       .catch(() => toast.error("Couldn't load this day; please try again. Hare Krishna 🙏"))
       .finally(() => !cancelled && setLoaded(true));
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateStr, ctx.userId]);
+  }, [dateStr, selectedWeekStartStr, ctx.userId]);
 
   // MotivationBanner: only when both this week and last week have data,
   // and the last 3 days show a regression.
@@ -53,6 +64,10 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
   const onSubmit = async (entry: DailyEntry) => {
     await saveDailyEntry(ctx, entry);
     setExisting(entry);
+    setWeekEntries((entries) => {
+      const withoutCurrent = entries.filter((item) => item.date !== entry.date);
+      return [...withoutCurrent, entry].sort((a, b) => a.date.localeCompare(b.date));
+    });
   };
 
   return (
@@ -76,10 +91,15 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
 
       {!loaded ? (
         <div className="py-10 text-center text-muted-foreground">Loading…</div>
-      ) : wizardMode ? (
-        <DailyWizard key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
       ) : (
-        <DailyEntryForm key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
+        <>
+          <DailyOverview entry={existing} weekEntries={weekEntries} />
+          {wizardMode ? (
+            <DailyWizard key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
+          ) : (
+            <DailyEntryForm key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
+          )}
+        </>
       )}
     </div>
   );

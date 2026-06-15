@@ -85,9 +85,6 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
     }
   };
 
-  const scoreChart = DAY_KEYS.flatMap((d) => []).length; // noop to satisfy nothing
-  void scoreChart;
-
   const compareData = [
     { name: "Wake", "This week": thisWeek.wakeTotal, "Last week": lastWeek.wakeTotal },
     { name: "Japa", "This week": thisWeek.japaTotal, "Last week": lastWeek.japaTotal },
