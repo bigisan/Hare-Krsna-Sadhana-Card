@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 30% 97%;
+    --foreground: 35 25% 18%;
+    --card: 40 35% 99%;
+    --card-foreground: 35 25% 18%;
+    --primary: 82 22% 55%;
+    --primary-foreground: 80 30% 98%;
+    --secondary: 40 25% 92%;
+    --secondary-foreground: 35 25% 25%;
+    --muted: 40 22% 93%;
+    --muted-foreground: 35 12% 45%;
+    --accent: 82 24% 90%;
+    --accent-foreground: 82 30% 25%;
+    --success: 90 30% 50%;
+    --success-foreground: 90 30% 98%;
+    --destructive: 8 55% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 38 22% 86%;
+    --input: 38 22% 84%;
+    --ring: 82 22% 55%;
+  }
+  .dark {
+    --background: 230 25% 10%;
+    --foreground: 40 25% 92%;
+    --card: 230 22% 13%;
+    --card-foreground: 40 25% 92%;
+    --primary: 82 22% 55%;
+    --primary-foreground: 230 25% 10%;
+    --secondary: 230 18% 18%;
+    --secondary-foreground: 40 20% 85%;
+    --muted: 230 18% 17%;
+    --muted-foreground: 40 12% 62%;
+    --accent: 82 18% 22%;
+    --accent-foreground: 82 25% 80%;
+    --success: 90 30% 50%;
+    --success-foreground: 230 25% 10%;
+    --destructive: 8 55% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 230 16% 22%;
+    --input: 230 16% 25%;
+    --ring: 82 22% 55%;
+  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans antialiased; }
+  .font-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "liga";
+  }
+}
