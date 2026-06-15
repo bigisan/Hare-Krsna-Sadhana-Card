@@ -23,14 +23,17 @@ export function AuthScreen() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-10">
+    <main className="soft-gradient-bg mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-10">
       <div className="mb-8 text-center">
-        <h1 className="font-display text-5xl font-semibold">Sadhana</h1>
+        <div className="glass-control mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lift">
+          <span className="font-display text-4xl leading-none">S</span>
+        </div>
+        <h1 className="font-display text-5xl font-semibold">Sadhana Card</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           A gentle companion for your daily practice
         </p>
       </div>
-      <Card>
+      <Card className="rounded-3xl">
         <CardHeader>
           <CardTitle className="text-center">
             {mode === "signin" ? "Welcome back" : "Create your account"}
@@ -67,7 +70,7 @@ export function AuthScreen() {
               Cloud sync is not configured on this build, so your practice will be kept on this device.
             </p>
           )}
-          <div className="border-t pt-4">
+          <div className="border-t border-white/35 pt-4">
             <Button variant="secondary" size="lg" className="w-full" onClick={continueAsGuest}>
               Continue as guest
             </Button>

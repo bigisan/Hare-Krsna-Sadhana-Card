@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 function PercentCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-white/35 bg-card/70 p-3 text-center shadow-soft">
+    <div className="glass-control rounded-2xl p-3 text-center">
       <div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
       <div className="mt-1 text-2xl font-semibold tabular-nums">{Math.round(value)}%</div>
     </div>
@@ -101,7 +101,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
   return (
     <div className="space-y-4">
       {/* week navigator */}
-      <div className="flex items-center justify-between">
+      <div className="glass-control flex items-center justify-between rounded-2xl p-2">
         <Button variant="ghost" size="icon" aria-label="Previous week"
           onClick={() => setWeekStart((w) => addWeeks(w, -1))}>
           <ChevronLeft className="h-5 w-5" />
@@ -119,13 +119,13 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
       </div>
 
       {/* sub-tabs */}
-      <div className="grid grid-cols-2 gap-2" role="tablist" aria-label="Weekly sections">
+      <div className="glass-control grid grid-cols-2 gap-1 rounded-2xl p-1" role="tablist" aria-label="Weekly sections">
         {(["log", "report"] as const).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
             className={cn(
-              "rounded-md py-2 text-sm font-medium capitalize",
+              "pressable min-h-10 rounded-xl py-2 text-sm font-semibold capitalize",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              tab === t ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground",
+              tab === t ? "bg-primary text-primary-foreground shadow-[0_10px_20px_hsl(82_24%_24%_/_0.20)]" : "text-secondary-foreground hover:bg-card/70",
             )}>
             {t}
           </button>
@@ -133,10 +133,10 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
       </div>
 
       {loading ? (
-        <Card><CardContent className="py-10 text-center text-muted-foreground">Loading the week…</CardContent></Card>
+        <Card className="rounded-3xl"><CardContent className="py-10 text-center text-muted-foreground">Loading the week…</CardContent></Card>
       ) : tab === "log" ? (
         <>
-          <Card>
+          <Card className="rounded-3xl">
             <CardContent className="overflow-x-auto p-4">
               <table className="w-full text-xs">
                 <thead>
@@ -184,7 +184,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
             <PercentCard label="Overall" value={overallPct} />
           </div>
 
-          <Card className="overflow-hidden border-primary/25 bg-[linear-gradient(145deg,hsl(82_22%_31%),hsl(35_28%_18%))] text-primary-foreground shadow-lift">
+          <Card className="overflow-hidden rounded-3xl border-primary/25 bg-[linear-gradient(145deg,hsl(82_22%_31%),hsl(35_28%_18%))] text-primary-foreground shadow-lift">
             <CardContent className="space-y-4 p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -223,7 +223,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
         </>
       ) : (
         <>
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader className="pb-2"><CardTitle className="text-xl">Scores: this week vs last</CardTitle></CardHeader>
             <CardContent className="h-56 p-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -239,7 +239,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader className="pb-2"><CardTitle className="text-xl">Hearing, reading, attendance</CardTitle></CardHeader>
             <CardContent className="h-64 p-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -258,7 +258,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
 
           <div className="space-y-3">
             {pramanasForComparison(comparison).map((p) => (
-              <Card key={p.id}>
+              <Card key={p.id} className="rounded-3xl">
                 <CardContent className="space-y-2 p-5">
                   <p className="font-display text-lg italic leading-snug">"{p.text}"</p>
                   <p className="text-xs font-medium text-muted-foreground">{p.reference}</p>

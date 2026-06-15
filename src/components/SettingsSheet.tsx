@@ -45,6 +45,7 @@ export function SettingsSheet({
   return (
     <Sheet open={open} onClose={onClose} title="Settings">
       <div className="space-y-6">
+        <div className="glass-card rounded-2xl p-4">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="font-medium">Wizard mode</p>
@@ -54,8 +55,9 @@ export function SettingsSheet({
           </div>
           <Switch checked={wizardMode} onCheckedChange={onWizardModeChange} label="Wizard mode" />
         </div>
+        </div>
 
-        <div className="border-t pt-6">
+        <div className="glass-card rounded-2xl p-4">
           <p className="font-medium">Backup guest data</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Save a copy before changing phones, browsers, or site domains.
