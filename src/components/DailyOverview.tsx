@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Flame, Leaf, Sparkles } from "lucide-react";
+import { Flame, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DailyEntry } from "@/lib/sadhana-types";
 import { cn } from "@/lib/utils";
@@ -44,24 +44,13 @@ export function DailyOverview({ entry, weekEntries }: Props) {
 
   return (
     <Card className="overflow-hidden border-primary/20 bg-[linear-gradient(145deg,hsl(42_28%_96%),hsl(82_20%_82%_/_0.58))] shadow-lift">
-      <CardContent className="relative space-y-5 p-5">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(43_42%_46%),hsl(var(--success)))]" />
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              {complete ? (
-                <CheckCircle2 className="h-4 w-4 text-success" />
-              ) : (
-                <Circle className="h-4 w-4" />
-              )}
-              {complete ? "Offered today" : "Ready for today"}
-            </div>
-            <h2 className="mt-1 font-display text-[2.15rem] font-semibold leading-none">Daily offering</h2>
-            <p className="mt-2 text-sm text-muted-foreground">A quiet place to complete today&apos;s card.</p>
+      <CardContent className="space-y-5 p-5">
+        <div>
+          <div className="text-sm font-semibold text-muted-foreground">
+            {complete ? "Submitted today" : "Ready for today"}
           </div>
-          <div className="rounded-lg border border-white/40 bg-accent p-2.5 text-accent-foreground shadow-soft">
-            <Leaf className="h-5 w-5" />
-          </div>
+          <h2 className="mt-1 font-display text-[2.15rem] font-semibold leading-none">Daily offering</h2>
+          <p className="mt-2 text-sm text-muted-foreground">A quiet place to complete today&apos;s card.</p>
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
