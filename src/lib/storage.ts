@@ -8,6 +8,8 @@ import { DailyEntry, emptyEntry, DAY_KEYS } from "./sadhana-types";
 const GUEST_PREFIX = "sadhana:entry:";
 const GUEST_SETTINGS = "sadhana:settings";
 const DRAFT_PREFIX = "sadhana:draft:";
+const BACKUP_PREFIX = "sadhana:";
+const BACKUP_VERSION = 1;
 
 export interface StorageCtx {
   userId: string | null; // null means guest
@@ -193,6 +195,44 @@ export async function saveSettings(ctx: StorageCtx, s: UserSettings): Promise<vo
   } else {
     localStorage.setItem(GUEST_SETTINGS, JSON.stringify(s));
   }
+}
+
+export interface LocalBackup {
+  app: "sadhana";
+  version: number;
+  exportedAt: string;
+  items: Record<string, string>;
+}
+
+export function exportLocalBackup(): LocalBackup {
+  const items: Record<string, string> = {};
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (!key?.startsWith(BACKUP_PREFIX)) continue;
+    const value = localStorage.getItem(key);
+    if (value !== null) items[key] = value;
+  }
+
+  return {
+    app: "sadhana",
+    version: BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    items,
+  };
+}
+
+export function importLocalBackup(backup: LocalBackup): number {
+  if (backup.app !== "sadhana" || !backup.items || typeof backup.items !== "object") {
+    throw new Error("This backup file does not look like Sadhana data.");
+  }
+
+  let imported = 0;
+  for (const [key, value] of Object.entries(backup.items)) {
+    if (!key.startsWith(BACKUP_PREFIX) || typeof value !== "string") continue;
+    localStorage.setItem(key, value);
+    imported += 1;
+  }
+  return imported;
 }
 
 export { emptyEntry, DAY_KEYS };
