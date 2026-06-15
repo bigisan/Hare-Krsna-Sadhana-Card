@@ -46,7 +46,11 @@
     --ring: 82 22% 55%;
   }
   * { @apply border-border; }
-  body { @apply bg-background text-foreground font-sans antialiased; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background:
+      linear-gradient(180deg, hsl(48 25% 88%) 0%, hsl(var(--background)) 32%, hsl(42 19% 87%) 100%);
+  }
   .font-display {
     font-family: 'Cormorant Garamond', Georgia, serif;
     letter-spacing: -0.01em;

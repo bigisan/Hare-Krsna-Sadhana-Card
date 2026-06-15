@@ -24,7 +24,10 @@ export default {
         display: ["'Cormorant Garamond'", "Georgia", "serif"],
         sans: ["Inter", "system-ui", "sans-serif"]
       },
-      boxShadow: { soft: "0 1px 3px hsl(40 20% 50% / 0.08), 0 4px 16px hsl(40 20% 50% / 0.06)" }
+      boxShadow: {
+        soft: "0 1px 2px hsl(40 18% 18% / 0.06), 0 10px 28px hsl(40 18% 18% / 0.10)",
+        lift: "0 10px 30px hsl(40 18% 18% / 0.14), 0 1px 0 hsl(0 0% 100% / 0.45) inset"
+      }
     }
   },
   plugins: []

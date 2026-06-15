@@ -42,10 +42,10 @@ function Shell() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[linear-gradient(180deg,hsl(48_23%_89%_/_0.96),hsl(40_24%_93%_/_0.84)_46%,hsl(41_20%_86%_/_0.92))]">
       <Header view={view} onViewChange={(v) => navigate(v === "daily" ? "/" : `/${v}`)}
         onOpenSettings={() => setSettingsOpen(true)} />
-      <main className="mx-auto max-w-lg px-4 py-6 pb-16">
+      <main className="mx-auto max-w-lg px-4 py-5 pb-16">
         <Routes>
           <Route path="/" element={<DailyView ctx={ctx} wizardMode={wizardMode} />} />
           <Route path="/weekly" element={<WeeklyView ctx={ctx} />} />

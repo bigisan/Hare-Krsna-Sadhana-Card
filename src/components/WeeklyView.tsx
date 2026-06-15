@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addWeeks, format, startOfWeek } from "date-fns";
-import { ChevronLeft, ChevronRight, FileDown, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileDown, Check, FileText, ShieldCheck } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid,
 } from "recharts";
@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
 
 function PercentCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md bg-secondary p-3 text-center">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-display text-2xl font-semibold">{Math.round(value)}%</div>
+    <div className="rounded-md border border-white/35 bg-card/70 p-3 text-center shadow-soft">
+      <div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-2xl font-semibold tabular-nums">{Math.round(value)}%</div>
     </div>
   );
 }
@@ -184,25 +184,37 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
             <PercentCard label="Overall" value={overallPct} />
           </div>
 
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-xl">Export to Sadhana Card</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Fills the official Brahmacari Sadhana Card with this week's entries: scores circled,
-                attendance ticked, totals and percentages computed.
-              </p>
+          <Card className="overflow-hidden border-primary/25 bg-[linear-gradient(145deg,hsl(82_22%_31%),hsl(35_28%_18%))] text-primary-foreground shadow-lift">
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-xs font-semibold text-white/85">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    PDF export
+                  </div>
+                  <h3 className="mt-3 font-display text-3xl font-semibold leading-none">Official card, ready to share</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/72">
+                    Fills the Brahmacari Sadhana Card with this week&apos;s scores, attendance, totals, and percentages.
+                  </p>
+                </div>
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-white/20 bg-white/12">
+                  <FileText className="h-6 w-6" />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <Input placeholder="Your name" value={devoteeName}
-                  onChange={(e) => setDevoteeName(e.target.value)} aria-label="Your name" />
+                  onChange={(e) => setDevoteeName(e.target.value)} aria-label="Your name"
+                  className="border-white/20 bg-white/12 text-white placeholder:text-white/55 focus-visible:ring-white/45" />
                 <Input placeholder="Mentor" value={mentorName}
-                  onChange={(e) => setMentorName(e.target.value)} aria-label="Mentor" />
+                  onChange={(e) => setMentorName(e.target.value)} aria-label="Mentor"
+                  className="border-white/20 bg-white/12 text-white placeholder:text-white/55 focus-visible:ring-white/45" />
               </div>
-              <Button className="w-full" onClick={doExport} disabled={exporting || entries.length === 0}>
+              <Button className="w-full bg-white text-foreground shadow-[0_12px_28px_hsl(0_0%_0%_/_0.20)] hover:bg-white/92" onClick={doExport} disabled={exporting || entries.length === 0}>
                 <FileDown className="h-4 w-4" />
                 {exporting ? "Preparing card…" : "Export week to card (PDF)"}
               </Button>
               {entries.length === 0 && (
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="text-center text-xs text-white/62">
                   Log at least one day this week to export.
                 </p>
               )}

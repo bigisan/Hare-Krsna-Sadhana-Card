@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Flame, Leaf } from "lucide-react";
+import { CheckCircle2, Circle, Flame, Leaf, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DailyEntry } from "@/lib/sadhana-types";
 import { cn } from "@/lib/utils";
@@ -25,9 +25,12 @@ function Stat({
   tone?: "default" | "success";
 }) {
   return (
-    <div className={cn("rounded-md bg-secondary p-3", tone === "success" && "bg-success/15")}>
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
+    <div className={cn(
+      "rounded-md border border-white/35 bg-card/55 p-3 shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]",
+      tone === "success" && "bg-success/15",
+    )}>
+      <div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-xl font-semibold tabular-nums text-foreground">{value}</div>
     </div>
   );
 }
@@ -40,8 +43,9 @@ export function DailyOverview({ entry, weekEntries }: Props) {
   const complete = !!entry;
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="space-y-4 p-5">
+    <Card className="overflow-hidden border-primary/20 bg-[linear-gradient(145deg,hsl(42_28%_96%),hsl(82_20%_82%_/_0.58))] shadow-lift">
+      <CardContent className="relative space-y-5 p-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(43_42%_46%),hsl(var(--success)))]" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -52,9 +56,10 @@ export function DailyOverview({ entry, weekEntries }: Props) {
               )}
               {complete ? "Offered today" : "Ready for today"}
             </div>
-            <h2 className="mt-1 font-display text-3xl font-semibold">Daily offering</h2>
+            <h2 className="mt-1 font-display text-[2.15rem] font-semibold leading-none">Daily offering</h2>
+            <p className="mt-2 text-sm text-muted-foreground">A quiet place to complete today&apos;s card.</p>
           </div>
-          <div className="rounded-full bg-accent p-2 text-accent-foreground">
+          <div className="rounded-lg border border-white/40 bg-accent p-2.5 text-accent-foreground shadow-soft">
             <Leaf className="h-5 w-5" />
           </div>
         </div>
@@ -73,9 +78,17 @@ export function DailyOverview({ entry, weekEntries }: Props) {
             </span>
             <span>{Math.round(weekPct)}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-secondary">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${weekPct}%` }} />
+          <div className="h-2.5 overflow-hidden rounded-full bg-secondary shadow-[0_1px_0_hsl(0_0%_100%_/_0.45)_inset]">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(43_42%_46%))] transition-all"
+              style={{ width: `${weekPct}%` }}
+            />
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-md bg-foreground/5 px-3 py-2 text-xs font-medium text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          Saved entries stay private on this device unless you choose cloud sync.
         </div>
       </CardContent>
     </Card>

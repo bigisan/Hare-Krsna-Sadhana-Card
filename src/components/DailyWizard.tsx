@@ -301,7 +301,7 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
           {draftSavedAt ? "Progress saved on this device" : "Progress saves on this device"}
         </span>
         <Button variant="ghost" size="sm" onClick={saveProgress}>
-          Save progress
+          Save
         </Button>
       </div>
       <Card>

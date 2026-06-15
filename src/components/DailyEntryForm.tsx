@@ -149,7 +149,7 @@ export function DailyEntryForm({ date, dayOfWeek, existing, onSubmit }: Props) {
               {draftSavedAt ? "Progress saved on this device" : "Progress saves on this device"}
             </span>
             <Button variant="ghost" size="sm" onClick={saveProgress}>
-              Save progress
+              Save
             </Button>
           </div>
           <Button size="lg" className="w-full" onClick={submit} disabled={saving}>
