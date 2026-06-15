@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,6 +51,8 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
   const [stepIndex, setStepIndex] = useState(0);
   const [entry, setEntry] = useState<DailyEntry>(() => existing ?? emptyEntry(date, dayOfWeek));
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
 
   // resume a draft for this date if one exists
   useEffect(() => {
@@ -58,31 +60,58 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
     if (draft) {
       setEntry(draft.entry);
       setStepIndex(draft.step);
+      setDraftSavedAt(draft.updatedAt ?? null);
     } else {
       setEntry(existing ?? emptyEntry(date, dayOfWeek));
       setStepIndex(0);
+      setDraftSavedAt(null);
     }
+    setDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   // autosave draft on every change so the devotee can leave and resume
   useEffect(() => {
-    saveDraft(date, { step: stepIndex, entry });
-  }, [date, stepIndex, entry]);
+    if (!dirty) return;
+    const id = window.setTimeout(() => {
+      const draft = saveDraft(date, { step: stepIndex, entry });
+      setDraftSavedAt(draft.updatedAt);
+      setDirty(false);
+    }, 350);
+    return () => window.clearTimeout(id);
+  }, [date, dirty, entry, stepIndex]);
 
   const step: Step = STEPS[stepIndex];
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
 
-  const set = (patch: Partial<DailyEntry>) => setEntry((e) => ({ ...e, ...patch }));
+  const saveProgress = () => {
+    const draft = saveDraft(date, { step: stepIndex, entry });
+    setDraftSavedAt(draft.updatedAt);
+    setDirty(false);
+    toast.success("Progress saved. You can finish this later.");
+  };
 
-  const next = () => setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
-  const back = () => setStepIndex((i) => Math.max(i - 1, 0));
+  const set = (patch: Partial<DailyEntry>) => {
+    setDirty(true);
+    setEntry((e) => ({ ...e, ...patch }));
+  };
+
+  const next = () => {
+    setDirty(true);
+    setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+  };
+  const back = () => {
+    setDirty(true);
+    setStepIndex((i) => Math.max(i - 1, 0));
+  };
 
   const submit = async () => {
     setSaving(true);
     try {
       await onSubmit(entry);
       clearDraft(date);
+      setDraftSavedAt(null);
+      setDirty(false);
       setStepIndex(0);
       toast.success("Today's sadhana is offered and saved. Hare Krishna 🙏");
     } catch {
@@ -265,6 +294,15 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary" role="progressbar"
         aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="flex items-center justify-between gap-3 rounded-md bg-secondary px-3 py-2 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+          {draftSavedAt ? "Progress saved on this device" : "Progress saves on this device"}
+        </span>
+        <Button variant="ghost" size="sm" onClick={saveProgress}>
+          Save progress
+        </Button>
       </div>
       <Card>
         <CardContent className="relative pt-8">

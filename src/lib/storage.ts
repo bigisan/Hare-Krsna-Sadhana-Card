@@ -153,13 +153,21 @@ export function entriesByDay(entries: DailyEntry[]): Partial<Record<string, Dail
   return map;
 }
 
-// ---------- wizard drafts (always device-local, resumable) ----------
+// ---------- daily drafts (always device-local, resumable) ----------
 
-export function saveDraft(date: string, draft: { step: number; entry: DailyEntry }): void {
-  localStorage.setItem(DRAFT_PREFIX + date, JSON.stringify(draft));
+export interface DailyDraft {
+  step: number;
+  entry: DailyEntry;
+  updatedAt: string;
 }
 
-export function getDraft(date: string): { step: number; entry: DailyEntry } | null {
+export function saveDraft(date: string, draft: { step: number; entry: DailyEntry }): DailyDraft {
+  const saved = { ...draft, updatedAt: new Date().toISOString() };
+  localStorage.setItem(DRAFT_PREFIX + date, JSON.stringify(saved));
+  return saved;
+}
+
+export function getDraft(date: string): DailyDraft | null {
   const raw = localStorage.getItem(DRAFT_PREFIX + date);
   return raw ? JSON.parse(raw) : null;
 }
