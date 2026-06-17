@@ -16,11 +16,13 @@ import { bannerPramana, Pramana } from "@/lib/pramanas";
 export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: boolean }) {
   const [date, setDate] = useState(() => new Date());
   const [existing, setExisting] = useState<DailyEntry | null>(null);
+  const [previousEntry, setPreviousEntry] = useState<DailyEntry | null>(null);
   const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [pramana, setPramana] = useState<Pramana | null>(null);
 
   const dateStr = format(date, "yyyy-MM-dd");
+  const dayLabel = format(date, "EEEE");
   const dayOfWeek = format(date, "EEE").toUpperCase();
   const selectedWeekStart = useMemo(() => startOfWeek(date, { weekStartsOn: 0 }), [date]);
   const selectedWeekStartStr = format(selectedWeekStart, "yyyy-MM-dd");
@@ -30,11 +32,13 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
     setLoaded(false);
     Promise.all([
       getDailyEntry(ctx, dateStr),
+      getDailyEntry(ctx, format(addDays(date, -1), "yyyy-MM-dd")),
       getEntriesForWeek(ctx, selectedWeekStartStr),
     ])
-      .then(([dayEntry, entries]) => {
+      .then(([dayEntry, prevEntry, entries]) => {
         if (cancelled) return;
         setExisting(dayEntry);
+        setPreviousEntry(prevEntry);
         setWeekEntries(entries);
       })
       .catch(() => toast.error("Couldn't load this day; please try again. Hare Krishna 🙏"))
@@ -101,11 +105,18 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
         </div>
       ) : (
         <>
-          <DailyOverview entry={existing} weekEntries={weekEntries} />
+          <DailyOverview entry={existing} weekEntries={weekEntries} dayLabel={dayLabel} />
           {wizardMode ? (
             <DailyWizard key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
           ) : (
-            <DailyEntryForm key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
+            <DailyEntryForm
+              key={dateStr}
+              date={dateStr}
+              dayOfWeek={dayOfWeek}
+              existing={existing}
+              previousEntry={previousEntry}
+              onSubmit={onSubmit}
+            />
           )}
         </>
       )}

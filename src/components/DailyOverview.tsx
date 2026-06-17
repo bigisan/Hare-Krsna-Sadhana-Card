@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface Props {
   entry: DailyEntry | null;
   weekEntries: DailyEntry[];
+  dayLabel: string;
 }
 
 const clampPct = (value: number) => Math.max(0, Math.min(100, value));
@@ -32,7 +33,7 @@ function Stat({
   );
 }
 
-export function DailyOverview({ entry, weekEntries }: Props) {
+export function DailyOverview({ entry, weekEntries, dayLabel }: Props) {
   const todayScore = dayScore(entry);
   const weekScore = weekEntries.reduce((sum, item) => sum + dayScore(item), 0);
   const loggedDays = weekEntries.length;
@@ -44,14 +45,14 @@ export function DailyOverview({ entry, weekEntries }: Props) {
       <CardContent className="space-y-5 p-5">
         <div>
           <div className="text-sm font-semibold text-muted-foreground">
-            {complete ? "Submitted today" : "Ready for today"}
+            {complete ? `${dayLabel} submitted` : `Ready for ${dayLabel}`}
           </div>
           <h2 className="mt-1 font-display text-[2.15rem] font-semibold leading-none">Daily offering</h2>
-          <p className="mt-2 text-sm text-muted-foreground">A quiet place to complete today&apos;s card.</p>
+          <p className="mt-2 text-sm text-muted-foreground">A quiet place to complete {dayLabel}&apos;s card.</p>
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <Stat label="Today" value={`${todayScore}/75`} tone={complete ? "success" : "default"} />
+          <Stat label={dayLabel} value={`${todayScore}/75`} tone={complete ? "success" : "default"} />
           <Stat label="Week" value={`${weekScore}/525`} />
           <Stat label="Days" value={`${loggedDays}/7`} />
         </div>

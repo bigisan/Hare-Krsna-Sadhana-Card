@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,8 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
 
   const step: Step = STEPS[stepIndex];
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
+  const dayName = format(parseISO(date), "EEEE");
+  const entryTitle = `${dayName}'s Sadhana`;
 
   const saveProgress = () => {
     const draft = saveDraft(date, { step: stepIndex, entry });
@@ -113,7 +116,7 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
       setDraftSavedAt(null);
       setDirty(false);
       setStepIndex(0);
-      toast.success("Today's sadhana is offered and saved. Hare Krishna 🙏");
+      toast.success(`${entryTitle} is offered and saved. Hare Krishna.`);
     } catch {
       toast.error("Saving didn't go through. Your answers are kept on this device; try again. Hare Krishna 🙏");
     } finally {
@@ -148,7 +151,7 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
     switch (step) {
       case "wake":
         return timeQuestion(
-          "When did you wake up today?",
+          `When did you wake up on ${dayName}?`,
           entry.wakeUpTime,
           entry.wakeUpScore,
           (v) => set({ wakeUpTime: v, wakeUpScore: scoreWakeUp(v) }),
@@ -188,13 +191,13 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
           entry.bedTime,
           entry.bedTimeScore,
           (v) => set({ bedTime: v, bedTimeScore: scoreBedTime(v) }),
-          "Recorded against today's entry.",
+          `Recorded against ${dayName}.`,
         );
       case "attendance":
         return (
           <div className="space-y-5">
             <h2 className="text-center font-display text-3xl font-semibold">
-              What did you attend today?
+              What did you attend on {dayName}?
             </h2>
             <div className="flex flex-wrap justify-center gap-2">
               {ATTENDANCE_ITEMS.map(({ key, label }) => {
@@ -264,7 +267,7 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
               day score {total} / 75
             </p>
             <Button size="lg" className="w-full" onClick={submit} disabled={saving}>
-              {saving ? "Offering…" : "Submit Today's Sadhana"}
+              {saving ? "Offering…" : `Submit ${entryTitle}`}
             </Button>
           </div>
         );
