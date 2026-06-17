@@ -29,16 +29,16 @@ export function Header({
         </svg>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="glass-control grid h-11 w-11 place-items-center rounded-xl bg-primary/90 text-primary-foreground shadow-lift">
+            <div className="grid h-11 w-11 place-items-center rounded-xl border border-primary/30 bg-primary text-primary-foreground shadow-lift">
               <FileText className="h-5 w-5" />
             </div>
             <div>
-            <h1 className="font-display text-[1.95rem] font-semibold leading-none">Sadhana Card</h1>
-            {isGuest && (
-              <span className="glass-control mt-1 inline-flex min-h-6 items-center rounded-full px-2.5 text-xs font-semibold text-secondary-foreground">
-                Guest
-              </span>
-            )}
+              <h1 className="font-display text-[1.95rem] font-semibold leading-none">Sadhana Card</h1>
+              {isGuest && (
+                <span className="glass-control mt-1 inline-flex min-h-6 items-center rounded-full px-2.5 text-xs font-semibold text-secondary-foreground">
+                  Guest
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1">
