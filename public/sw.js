@@ -1,4 +1,4 @@
-const CACHE_NAME = "sadhana-v1";
+const CACHE_NAME = "sadhana-v2";
 
 const APP_SHELL = [
   "/",
