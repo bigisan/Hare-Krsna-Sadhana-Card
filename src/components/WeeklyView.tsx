@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addWeeks, format, startOfWeek } from "date-fns";
-import { ChevronLeft, ChevronRight, FileDown, Check, FileText, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileDown, Check, FileText, Share2, ShieldCheck } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid,
 } from "recharts";
@@ -14,6 +14,13 @@ import {
 } from "@/lib/sadhana-types";
 import { getEntriesForWeek, entriesByDay, StorageCtx } from "@/lib/storage";
 import { pramanasForComparison } from "@/lib/pramanas";
+import {
+  canSharePdf,
+  downloadPdf,
+  openPdf,
+  sharePdf,
+  type SadhanaCardPdf,
+} from "@/lib/pdfDelivery";
 
 import { cn } from "@/lib/utils";
 
@@ -34,6 +41,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
   const [lastEntries, setLastEntries] = useState<DailyEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [preparedPdf, setPreparedPdf] = useState<SadhanaCardPdf | null>(null);
   const [devoteeName, setDevoteeName] = useState(() => localStorage.getItem("sadhana:name") ?? "");
   const [mentorName, setMentorName] = useState(() => localStorage.getItem("sadhana:mentor") ?? "");
 
@@ -70,18 +78,50 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
     setExporting(true);
     try {
       const { exportSadhanaCard } = await import("@/lib/exportSadhanaCard");
-      await exportSadhanaCard({
+      const pdf = await exportSadhanaCard({
         name: devoteeName || (user?.email ?? (isGuest ? "Guest devotee" : "")),
         mentor: mentorName,
         dateFrom: format(weekStart, "dd/MM/yyyy"),
         dateTo: format(addDays(weekStart, 6), "dd/MM/yyyy"),
         days: byDay,
       });
-      toast.success("Your sadhana card is ready to share with your mentor. Hare Krishna 🙏");
+      setPreparedPdf(pdf);
+
+      if (canSharePdf(pdf)) {
+        try {
+          await sharePdf(pdf);
+          toast.success("Your sadhana card is ready to share with your mentor. Hare Krishna 🙏");
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          toast.info("Your PDF is ready. Tap Share or save PDF below.");
+          return;
+        }
+      }
+
+      downloadPdf(pdf);
+      toast.success("Your sadhana card PDF has been downloaded. Hare Krishna 🙏");
     } catch {
       toast.error("The card export didn't complete; please try again. Hare Krishna 🙏");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const sharePreparedPdf = async () => {
+    if (!preparedPdf) return;
+
+    try {
+      if (canSharePdf(preparedPdf)) {
+        await sharePdf(preparedPdf);
+      } else {
+        openPdf(preparedPdf);
+        toast.info("The PDF is open. Use your browser's Share button to save it to Files.");
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        toast.error("The PDF couldn't open. Please try again.");
+      }
     }
   };
 
@@ -213,6 +253,20 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
                 <FileDown className="h-4 w-4" />
                 {exporting ? "Preparing card…" : "Export week to card (PDF)"}
               </Button>
+              {preparedPdf && (
+                <div className="rounded-2xl border border-white/20 bg-white/10 p-3">
+                  <p className="mb-2 text-center text-xs font-medium text-white/80">Your PDF is ready.</p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full border-white/20 bg-white/90 text-foreground hover:bg-white"
+                    onClick={sharePreparedPdf}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share or save PDF
+                  </Button>
+                </div>
+              )}
               {entries.length === 0 && (
                 <p className="text-center text-xs text-white/62">
                   Log at least one day this week to export.

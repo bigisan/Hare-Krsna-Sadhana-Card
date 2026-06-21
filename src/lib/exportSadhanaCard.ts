@@ -4,6 +4,7 @@
 
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import type { DailyEntry } from "./sadhana-types";
+import type { SadhanaCardPdf } from "./pdfDelivery";
 
 const PAGE_H = 842;
 const INK = rgb(0.11, 0.31, 0.85); // pen blue
@@ -43,7 +44,7 @@ export interface WeekExport {
   days: Partial<Record<string, DailyEntry>>; // keyed SUN..SAT
 }
 
-export async function exportSadhanaCard(week: WeekExport): Promise<void> {
+export async function exportSadhanaCard(week: WeekExport): Promise<SadhanaCardPdf> {
   const templateBytes = await fetch("/sadhana-card-template.pdf").then((r) => {
     if (!r.ok) throw new Error("Card template not found in /public");
     return r.arrayBuffer();
@@ -123,10 +124,8 @@ export async function exportSadhanaCard(week: WeekExport): Promise<void> {
 
   const bytes = await doc.save();
   const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `sadhana-card-${week.dateFrom.replaceAll("/", "-")}.pdf`;
-  a.click();
-  URL.revokeObjectURL(url);
+  return {
+    blob,
+    fileName: `sadhana-card-${week.dateFrom.replaceAll("/", "-")}.pdf`,
+  };
 }
