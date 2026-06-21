@@ -16,12 +16,16 @@ function Shell() {
   const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [wizardMode, setWizardMode] = useState(true);
+  const [allowCustomTime, setAllowCustomTime] = useState(false);
 
   const ctx: StorageCtx = useMemo(() => ({ userId: user?.id ?? null }), [user?.id]);
   const signedIn = !!user || isGuest;
 
   useEffect(() => {
-    if (signedIn) getSettings(ctx).then((s) => setWizardMode(s.wizardMode));
+    if (signedIn) getSettings(ctx).then((settings) => {
+      setWizardMode(settings.wizardMode);
+      setAllowCustomTime(settings.allowCustomTime);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signedIn, ctx.userId]);
 
@@ -38,7 +42,12 @@ function Shell() {
 
   const onWizardModeChange = (v: boolean) => {
     setWizardMode(v);
-    saveSettings(ctx, { wizardMode: v });
+    saveSettings(ctx, { wizardMode: v, allowCustomTime });
+  };
+
+  const onAllowCustomTimeChange = (v: boolean) => {
+    setAllowCustomTime(v);
+    saveSettings(ctx, { wizardMode, allowCustomTime: v });
   };
 
   return (
@@ -47,14 +56,15 @@ function Shell() {
         onOpenSettings={() => setSettingsOpen(true)} />
       <main className="safe-bottom-padding mx-auto max-w-lg px-4 py-5">
         <Routes>
-          <Route path="/" element={<DailyView ctx={ctx} wizardMode={wizardMode} />} />
+          <Route path="/" element={<DailyView ctx={ctx} wizardMode={wizardMode} allowCustomTime={allowCustomTime} />} />
           <Route path="/weekly" element={<WeeklyView ctx={ctx} />} />
           <Route path="/monthly" element={<MonthlyProgress ctx={ctx} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)}
-        wizardMode={wizardMode} onWizardModeChange={onWizardModeChange} />
+        wizardMode={wizardMode} onWizardModeChange={onWizardModeChange}
+        allowCustomTime={allowCustomTime} onAllowCustomTimeChange={onAllowCustomTimeChange} />
     </div>
   );
 }

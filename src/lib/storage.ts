@@ -7,6 +7,7 @@ import { DailyEntry, emptyEntry, DAY_KEYS } from "./sadhana-types";
 
 const GUEST_PREFIX = "sadhana:entry:";
 const GUEST_SETTINGS = "sadhana:settings";
+const CUSTOM_TIME_SETTING = "sadhana:custom-time-entry";
 const DRAFT_PREFIX = "sadhana:draft:";
 const BACKUP_PREFIX = "sadhana:";
 const BACKUP_VERSION = 1;
@@ -180,22 +181,30 @@ export function clearDraft(date: string): void {
 
 export interface UserSettings {
   wizardMode: boolean;
+  allowCustomTime: boolean;
 }
 
 export async function getSettings(ctx: StorageCtx): Promise<UserSettings> {
+  const allowCustomTime = localStorage.getItem(CUSTOM_TIME_SETTING) === "true";
   if (ctx.userId && supabase) {
     const { data } = await supabase
       .from("user_settings")
       .select("wizard_mode")
       .eq("user_id", ctx.userId)
       .maybeSingle();
-    return { wizardMode: data?.wizard_mode ?? true };
+    return { wizardMode: data?.wizard_mode ?? true, allowCustomTime };
   }
   const raw = localStorage.getItem(GUEST_SETTINGS);
-  return raw ? JSON.parse(raw) : { wizardMode: true };
+  if (!raw) return { wizardMode: true, allowCustomTime };
+  const stored = JSON.parse(raw) as Partial<UserSettings>;
+  return {
+    wizardMode: stored.wizardMode ?? true,
+    allowCustomTime: stored.allowCustomTime ?? allowCustomTime,
+  };
 }
 
 export async function saveSettings(ctx: StorageCtx, s: UserSettings): Promise<void> {
+  localStorage.setItem(CUSTOM_TIME_SETTING, String(s.allowCustomTime));
   if (ctx.userId && supabase) {
     await supabase
       .from("user_settings")

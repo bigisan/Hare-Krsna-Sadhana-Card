@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  BED_PRESETS,
+  JAPA_PRESETS,
+  TimePresetSelector,
+  WAKE_PRESETS,
+  type TimePreset,
+} from "@/components/TimePresetSelector";
+import {
   DailyEntry, ATTENDANCE_ITEMS, STUDY_ITEMS,
   scoreBedTime, scoreWakeUp, scoreJapa, emptyEntry,
 } from "@/lib/sadhana-types";
@@ -16,6 +23,7 @@ interface Props {
   date: string;
   dayOfWeek: string;
   existing: DailyEntry | null;
+  allowCustomTime: boolean;
   onSubmit: (entry: DailyEntry) => Promise<void>;
 }
 
@@ -48,7 +56,7 @@ const MINUTE_LABELS: Record<string, string> = {
   rspLecturesMinutes: "How many minutes did you hear RSP's lectures?",
 };
 
-export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
+export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubmit }: Props) {
   const [stepIndex, setStepIndex] = useState(0);
   const [entry, setEntry] = useState<DailyEntry>(() => existing ?? emptyEntry(date, dayOfWeek));
   const [saving, setSaving] = useState(false);
@@ -128,19 +136,22 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
     title: string,
     value: string | null,
     score: number,
-    onChange: (v: string) => void,
+    presets: TimePreset[],
+    onPresetSelect: (preset: TimePreset) => void,
+    onCustomTimeChange: (time: string) => void,
     note?: string,
   ) => (
-    <div className="space-y-5 text-center">
-      <h2 className="font-display text-3xl font-semibold">{title}</h2>
+    <div className="space-y-5">
       {note && <p className="text-sm text-muted-foreground">{note}</p>}
-      <Input
-        type="time"
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="mx-auto w-44 text-center text-lg"
+      <TimePresetSelector
+        title={title}
+        value={value}
+        score={score}
+        presets={presets}
+        allowCustomTime={allowCustomTime}
+        onPresetSelect={onPresetSelect}
+        onCustomTimeChange={onCustomTimeChange}
       />
-      {value && <div><ScoreChip score={score} /></div>}
       <Button size="lg" className="w-full" disabled={!value} onClick={next}>
         Continue
       </Button>
@@ -151,25 +162,26 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
     switch (step) {
       case "wake":
         return timeQuestion(
-          `When did you wake up on ${dayName}?`,
+          "Nidra: Wake up",
           entry.wakeUpTime,
           entry.wakeUpScore,
-          (v) => set({ wakeUpTime: v, wakeUpScore: scoreWakeUp(v) }),
+          WAKE_PRESETS,
+          (preset) => set({ wakeUpTime: preset.time, wakeUpScore: preset.score }),
+          (time) => set({ wakeUpTime: time, wakeUpScore: scoreWakeUp(time) }),
         );
       case "japa":
         return (
-          <div className="space-y-5 text-center">
-            <h2 className="font-display text-3xl font-semibold">When did you finish Japa?</h2>
-            <Input
-              type="time"
-              value={entry.japaCompletionTime ?? ""}
-              onChange={(e) =>
-                set({ japaCompletionTime: e.target.value, japaScore: scoreJapa(e.target.value) })
-              }
-              className="mx-auto w-44 text-center text-lg"
+          <div className="space-y-5">
+            <TimePresetSelector
+              title="Japa"
+              value={entry.japaCompletionTime}
+              score={entry.japaScore}
+              presets={JAPA_PRESETS}
+              allowCustomTime={allowCustomTime}
+              onPresetSelect={(preset) => set({ japaCompletionTime: preset.time, japaScore: preset.score })}
+              onCustomTimeChange={(time) => set({ japaCompletionTime: time, japaScore: scoreJapa(time) })}
             />
-            {entry.japaCompletionTime && <div><ScoreChip score={entry.japaScore} /></div>}
-            <div className="space-y-1">
+            <div className="space-y-1 text-center">
               <label htmlFor="rounds" className="block text-sm text-muted-foreground">Rounds chanted</label>
               <Input
                 id="rounds"
@@ -187,10 +199,12 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
         );
       case "bed":
         return timeQuestion(
-          "When did you go to bed?",
+          "Nidra: Sleep",
           entry.bedTime,
           entry.bedTimeScore,
-          (v) => set({ bedTime: v, bedTimeScore: scoreBedTime(v) }),
+          BED_PRESETS,
+          (preset) => set({ bedTime: preset.time, bedTimeScore: preset.score }),
+          (time) => set({ bedTime: time, bedTimeScore: scoreBedTime(time) }),
           `Recorded against ${dayName}.`,
         );
       case "attendance":
@@ -290,7 +304,7 @@ export function DailyWizard({ date, dayOfWeek, existing, onSubmit }: Props) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, entry, saving]);
+  }, [step, entry, saving, allowCustomTime]);
 
   return (
     <div className="space-y-4">

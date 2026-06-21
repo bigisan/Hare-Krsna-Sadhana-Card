@@ -94,7 +94,7 @@ export function scoreWakeUp(time: string | null): number {
 export function scoreJapa(time: string | null): number {
   return stepScore(time, [
     [T(7, 15), 25], [T(9, 0), 20], [T(9, 15), 15],
-    [T(9, 30), 10], [T(9, 45), 5], [T(10, 0), 0],
+    [T(9, 30), 10], [T(9, 45), 5], [T(10, 15), 0],
   ]);
 }
 

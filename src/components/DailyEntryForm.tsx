@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  BED_PRESETS,
+  JAPA_PRESETS,
+  TimePresetSelector,
+  WAKE_PRESETS,
+} from "@/components/TimePresetSelector";
+import {
   DailyEntry, ATTENDANCE_ITEMS, STUDY_ITEMS,
   scoreBedTime, scoreWakeUp, scoreJapa, emptyEntry,
 } from "@/lib/sadhana-types";
@@ -17,20 +23,11 @@ interface Props {
   dayOfWeek: string;
   existing: DailyEntry | null;
   previousEntry: DailyEntry | null;
+  allowCustomTime: boolean;
   onSubmit: (entry: DailyEntry) => Promise<void>;
 }
 
 type SectionKey = "core" | "attendance" | "reading";
-
-const TIME_PRESETS = {
-  wake: ["03:45", "04:00", "04:15", "04:30", "05:00"],
-  japa: ["07:15", "08:00", "09:00", "09:30", "10:00"],
-  bed: ["20:45", "21:00", "21:30", "22:00", "22:30"],
-};
-
-function formatScore(score: number) {
-  return score >= 0 ? `+${score}` : `${score}`;
-}
 
 function Section({
   title,
@@ -64,7 +61,7 @@ function Section({
   );
 }
 
-export function DailyEntryForm({ date, dayOfWeek, existing, previousEntry, onSubmit }: Props) {
+export function DailyEntryForm({ date, dayOfWeek, existing, previousEntry, allowCustomTime, onSubmit }: Props) {
   const [entry, setEntry] = useState<DailyEntry>(() => existing ?? emptyEntry(date, dayOfWeek));
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -140,44 +137,6 @@ export function DailyEntryForm({ date, dayOfWeek, existing, previousEntry, onSub
     }
   };
 
-  const timeRow = (
-    label: string,
-    value: string | null,
-    score: number,
-    presets: string[],
-    onChange: (v: string) => void,
-  ) => (
-    <div className="space-y-2 rounded-2xl border border-white/30 bg-card/50 p-3 shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]">
-      <div className="flex items-center justify-between gap-3">
-        <label className="text-sm font-medium">{label}</label>
-        <span className={cn(
-          "min-w-10 rounded-full px-2 py-0.5 text-center text-xs font-semibold",
-          value ? "bg-success/15 text-success" : "bg-secondary text-muted-foreground",
-        )}>
-          {value ? formatScore(score) : "-"}
-        </span>
-      </div>
-      <Input type="time" value={value ?? ""} onChange={(e) => onChange(e.target.value)} className="h-12 text-center text-base" />
-      <div className="grid grid-cols-5 gap-1.5">
-        {presets.map((time) => (
-          <button
-            key={time}
-            type="button"
-            onClick={() => onChange(time)}
-            className={cn(
-              "pressable min-h-9 rounded-lg border px-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              value === time
-                ? "border-primary bg-primary text-primary-foreground shadow-[0_8px_18px_hsl(82_24%_24%_/_0.16)]"
-                : "border-white/35 bg-background/45 text-muted-foreground hover:bg-accent",
-            )}
-          >
-            {time}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
     <Card className="rounded-3xl">
       <CardHeader className="space-y-3">
@@ -205,17 +164,29 @@ export function DailyEntryForm({ date, dayOfWeek, existing, previousEntry, onSub
 
       <CardContent className="space-y-4">
         <Section
-          title="Core rhythm"
+          title="Daily timings"
           summary={`${entry.wakeUpTime ?? "Wake"} · ${entry.japaCompletionTime ?? "Japa"} · ${entry.bedTime ?? "Bed"}`}
           open={openSections.core}
           onToggle={() => toggleSection("core")}
         >
-          {timeRow("Wake up", entry.wakeUpTime, entry.wakeUpScore, TIME_PRESETS.wake,
-            (v) => set({ wakeUpTime: v, wakeUpScore: scoreWakeUp(v) }))}
-          {timeRow("Japa finished", entry.japaCompletionTime, entry.japaScore, TIME_PRESETS.japa,
-            (v) => set({ japaCompletionTime: v, japaScore: scoreJapa(v) }))}
-          {timeRow("To bed", entry.bedTime, entry.bedTimeScore, TIME_PRESETS.bed,
-            (v) => set({ bedTime: v, bedTimeScore: scoreBedTime(v) }))}
+          <TimePresetSelector
+            title="Nidra: Wake up"
+            value={entry.wakeUpTime}
+            score={entry.wakeUpScore}
+            presets={WAKE_PRESETS}
+            allowCustomTime={allowCustomTime}
+            onPresetSelect={(preset) => set({ wakeUpTime: preset.time, wakeUpScore: preset.score })}
+            onCustomTimeChange={(time) => set({ wakeUpTime: time, wakeUpScore: scoreWakeUp(time) })}
+          />
+          <TimePresetSelector
+            title="Japa"
+            value={entry.japaCompletionTime}
+            score={entry.japaScore}
+            presets={JAPA_PRESETS}
+            allowCustomTime={allowCustomTime}
+            onPresetSelect={(preset) => set({ japaCompletionTime: preset.time, japaScore: preset.score })}
+            onCustomTimeChange={(time) => set({ japaCompletionTime: time, japaScore: scoreJapa(time) })}
+          />
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/30 bg-card/50 p-3">
             <label htmlFor="japa-rounds" className="text-sm font-medium">Japa rounds</label>
             <Input
@@ -227,6 +198,15 @@ export function DailyEntryForm({ date, dayOfWeek, existing, previousEntry, onSub
               className="h-11 w-24 text-center"
             />
           </div>
+          <TimePresetSelector
+            title="Nidra: Sleep"
+            value={entry.bedTime}
+            score={entry.bedTimeScore}
+            presets={BED_PRESETS}
+            allowCustomTime={allowCustomTime}
+            onPresetSelect={(preset) => set({ bedTime: preset.time, bedTimeScore: preset.score })}
+            onCustomTimeChange={(time) => set({ bedTime: time, bedTimeScore: scoreBedTime(time) })}
+          />
         </Section>
 
         <Section

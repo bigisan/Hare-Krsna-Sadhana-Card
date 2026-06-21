@@ -7,12 +7,14 @@ import { Switch } from "@/components/ui/switch";
 import { exportLocalBackup, importLocalBackup, LocalBackup } from "@/lib/storage";
 
 export function SettingsSheet({
-  open, onClose, wizardMode, onWizardModeChange,
+  open, onClose, wizardMode, onWizardModeChange, allowCustomTime, onAllowCustomTimeChange,
 }: {
   open: boolean;
   onClose: () => void;
   wizardMode: boolean;
   onWizardModeChange: (v: boolean) => void;
+  allowCustomTime: boolean;
+  onAllowCustomTimeChange: (v: boolean) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -46,15 +48,27 @@ export function SettingsSheet({
     <Sheet open={open} onClose={onClose} title="Settings">
       <div className="space-y-6">
         <div className="glass-card rounded-2xl p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="font-medium">Wizard mode</p>
-            <p className="text-sm text-muted-foreground">
-              One question at a time. Turn off for the all-on-one-page form.
-            </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium">Wizard mode</p>
+              <p className="text-sm text-muted-foreground">
+                One question at a time. Turn off for the all-on-one-page form.
+              </p>
+            </div>
+            <Switch checked={wizardMode} onCheckedChange={onWizardModeChange} label="Wizard mode" />
           </div>
-          <Switch checked={wizardMode} onCheckedChange={onWizardModeChange} label="Wizard mode" />
         </div>
+
+        <div className="glass-card rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-medium">Exact time entry</p>
+              <p className="text-sm text-muted-foreground">
+                Show a time field beneath the preset scoring buttons.
+              </p>
+            </div>
+            <Switch checked={allowCustomTime} onCheckedChange={onAllowCustomTimeChange} label="Exact time entry" />
+          </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4">

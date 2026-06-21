@@ -13,7 +13,15 @@ import {
 } from "@/lib/storage";
 import { bannerPramana, Pramana } from "@/lib/pramanas";
 
-export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: boolean }) {
+export function DailyView({
+  ctx,
+  wizardMode,
+  allowCustomTime,
+}: {
+  ctx: StorageCtx;
+  wizardMode: boolean;
+  allowCustomTime: boolean;
+}) {
   const [date, setDate] = useState(() => new Date());
   const [existing, setExisting] = useState<DailyEntry | null>(null);
   const [previousEntry, setPreviousEntry] = useState<DailyEntry | null>(null);
@@ -107,7 +115,8 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
         <>
           <DailyOverview entry={existing} weekEntries={weekEntries} dayLabel={dayLabel} />
           {wizardMode ? (
-            <DailyWizard key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing} onSubmit={onSubmit} />
+            <DailyWizard key={dateStr} date={dateStr} dayOfWeek={dayOfWeek} existing={existing}
+              allowCustomTime={allowCustomTime} onSubmit={onSubmit} />
           ) : (
             <DailyEntryForm
               key={dateStr}
@@ -115,6 +124,7 @@ export function DailyView({ ctx, wizardMode }: { ctx: StorageCtx; wizardMode: bo
               dayOfWeek={dayOfWeek}
               existing={existing}
               previousEntry={previousEntry}
+              allowCustomTime={allowCustomTime}
               onSubmit={onSubmit}
             />
           )}
