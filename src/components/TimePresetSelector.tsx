@@ -1,12 +1,9 @@
 import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import type { TimePreset } from "@/lib/time-display";
 import { cn } from "@/lib/utils";
 
-export interface TimePreset {
-  label: string;
-  time: string;
-  score: number;
-}
+export { BED_PRESETS, JAPA_PRESETS, WAKE_PRESETS, type TimePreset } from "@/lib/time-display";
 
 interface Props {
   title: string;
@@ -34,7 +31,7 @@ export function TimePresetSelector({
   return (
     <section className="space-y-3 border-b border-border/55 pb-5 last:border-b-0 last:pb-0" aria-labelledby={`time-${title.toLowerCase().replaceAll(" ", "-")}`}>
       <div className="flex items-center justify-between gap-3">
-        <h3 id={`time-${title.toLowerCase().replaceAll(" ", "-")}`} className="font-display text-2xl font-semibold">{title}</h3>
+        <h3 id={`time-${title.toLowerCase().replaceAll(" ", "-")}`} className="font-display text-[1.65rem] font-semibold leading-none">{title}</h3>
         <span
           className={cn(
             "rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
@@ -60,7 +57,7 @@ export function TimePresetSelector({
                 index === presets.length - 1 && presets.length % 2 === 1 && "col-span-2",
                 selected
                   ? "border-primary bg-primary text-primary-foreground shadow-[0_10px_22px_hsl(82_24%_24%_/_0.20)]"
-                  : "border-white/45 bg-card/60 text-secondary-foreground hover:bg-accent",
+                  : "border-border/65 bg-card/75 text-secondary-foreground hover:border-primary/35 hover:bg-accent/45",
               )}
             >
               {selected && <Check className="absolute right-2 top-2 h-4 w-4" aria-hidden="true" />}
@@ -74,7 +71,7 @@ export function TimePresetSelector({
       </div>
 
       {allowCustomTime && (
-        <div className="glass-control flex items-center justify-between gap-3 rounded-xl px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-border/55 bg-card/75 px-3 py-2.5">
           <label className="text-sm font-medium" htmlFor={`custom-${title.toLowerCase().replaceAll(" ", "-")}`}>
             Enter exact time
           </label>
@@ -90,39 +87,9 @@ export function TimePresetSelector({
 
       {!allowCustomTime && value && !selectedPreset && (
         <p className="text-xs text-muted-foreground">
-          Exact time saved previously: {value}. Choose a button to update it.
+          A custom exact time is saved for this entry. Choose a preset to update it, or enable exact time entry in Settings.
         </p>
       )}
     </section>
   );
 }
-
-export const WAKE_PRESETS: TimePreset[] = [
-  { label: "3:45 am or before", time: "03:45", score: 25 },
-  { label: "before 4:00 am", time: "04:00", score: 20 },
-  { label: "before 4:15 am", time: "04:15", score: 15 },
-  { label: "before 4:30 am", time: "04:30", score: 10 },
-  { label: "before 4:45 am", time: "04:45", score: 5 },
-  { label: "before 5:00 am", time: "05:00", score: 0 },
-  { label: "after 5:00 am", time: "05:01", score: -5 },
-];
-
-export const JAPA_PRESETS: TimePreset[] = [
-  { label: "7:15 am or before", time: "07:15", score: 25 },
-  { label: "before 9:00 am", time: "09:00", score: 20 },
-  { label: "before 9:15 am", time: "09:15", score: 15 },
-  { label: "before 9:30 am", time: "09:30", score: 10 },
-  { label: "before 9:45 am", time: "09:45", score: 5 },
-  { label: "10:00 - 10:15 am", time: "10:15", score: 0 },
-  { label: "after 10:15 am", time: "10:16", score: -5 },
-];
-
-export const BED_PRESETS: TimePreset[] = [
-  { label: "8:45 pm or before", time: "20:45", score: 25 },
-  { label: "before 9:00 pm", time: "21:00", score: 20 },
-  { label: "before 9:15 pm", time: "21:15", score: 15 },
-  { label: "before 9:30 pm", time: "21:30", score: 10 },
-  { label: "before 9:45 pm", time: "21:45", score: 5 },
-  { label: "before 10:00 pm", time: "22:00", score: 0 },
-  { label: "after 10:00 pm", time: "22:01", score: -5 },
-];

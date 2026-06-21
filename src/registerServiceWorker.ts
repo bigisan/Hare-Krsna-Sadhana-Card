@@ -2,6 +2,8 @@ export function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || import.meta.env.DEV) return;
 
   let refreshing = false;
+  // The active app reloads once after the new worker takes control, so an installed
+  // iPhone PWA receives the latest UI without asking the user to reinstall it.
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (refreshing) return;
     refreshing = true;

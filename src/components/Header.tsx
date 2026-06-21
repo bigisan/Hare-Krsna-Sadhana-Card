@@ -1,4 +1,4 @@
-import { CalendarDays, FileText, Home, LogOut, Settings } from "lucide-react";
+import { CalendarDays, CalendarRange, FileText, Home, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,29 +14,25 @@ export function Header({
 }) {
   const { isGuest, signOut } = useAuth();
   const nav = [
-    { key: "daily", label: "Daily", icon: Home },
-    { key: "weekly", label: "Weekly", icon: FileText },
-    { key: "monthly", label: "Monthly", icon: CalendarDays },
+    { key: "daily", label: "Today", icon: Home },
+    { key: "weekly", label: "Week", icon: CalendarRange },
+    { key: "monthly", label: "Month", icon: CalendarDays },
   ] as const;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/35 bg-background/72 shadow-[0_12px_32px_hsl(40_18%_18%_/_0.10)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/58">
-      <div className="relative mx-auto max-w-lg px-4 pb-3 pt-4">
-        {/* lotus watermark */}
-        <svg aria-hidden viewBox="0 0 100 60" className="pointer-events-none absolute right-2 top-1 h-14 w-24 opacity-[0.07]">
-          <path d="M50 8 C42 22 42 36 50 50 C58 36 58 8 50 8 Z M50 50 C38 42 24 40 12 46 C22 54 38 56 50 50 Z M50 50 C62 42 76 40 88 46 C78 54 62 56 50 50 Z M50 50 C40 38 28 30 14 30 C20 42 34 50 50 50 Z M50 50 C60 38 72 30 86 30 C80 42 66 50 50 50 Z" fill="currentColor"/>
-          <path d="M50 14 C47 20 47 26 50 31 C53 26 53 20 50 14 Z" fill="currentColor"/>
-        </svg>
+    <>
+      <header className="app-top-bar sticky top-0 z-40">
+        <div className="mx-auto max-w-lg px-4 py-2.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-xl border border-primary/30 bg-primary text-primary-foreground shadow-lift">
-              <FileText className="h-5 w-5" />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-primary/30 bg-primary text-primary-foreground shadow-soft">
+              <FileText className="h-[1.125rem] w-[1.125rem]" />
             </div>
-            <div>
-              <h1 className="font-display text-[1.95rem] font-semibold leading-none">Sadhana Card</h1>
+            <div className="min-w-0">
+              <h1 className="truncate font-display text-[1.65rem] font-semibold leading-none">Sadhana Card</h1>
               {isGuest && (
-                <span className="glass-control mt-1 inline-flex min-h-6 items-center rounded-full px-2.5 text-xs font-semibold text-secondary-foreground">
-                  Guest
+                <span className="mt-0.5 inline-flex rounded-full bg-secondary/75 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  On this device
                 </span>
               )}
             </div>
@@ -50,22 +46,24 @@ export function Header({
             </Button>
           </div>
         </div>
-        <nav className="glass-control mt-4 grid grid-cols-3 gap-1 rounded-xl p-1" aria-label="Views">
-          {nav.map(({ key, label, icon: Icon }) => (
+        </div>
+      </header>
+      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-lg grid-cols-3 border-t border-white/60 bg-card/[0.92] px-2 pt-1.5 shadow-[0_-12px_32px_hsl(40_18%_18%_/_0.10)] backdrop-blur-2xl pb-[max(0.4rem,env(safe-area-inset-bottom))]" aria-label="Views">
+        {nav.map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => onViewChange(key)} aria-current={view === key ? "page" : undefined}
               className={cn(
-                "pressable inline-flex min-h-10 touch-manipulation items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm font-semibold transition-all",
+                "pressable relative inline-flex min-h-14 touch-manipulation flex-col items-center justify-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold transition-all",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 view === key
-                  ? "bg-primary text-primary-foreground shadow-[0_10px_20px_hsl(82_24%_24%_/_0.22),0_1px_0_hsl(0_0%_100%_/_0.22)_inset]"
-                  : "text-secondary-foreground hover:bg-card/70",
+                  ? "bg-primary/[0.12] text-primary"
+                  : "text-muted-foreground hover:bg-card hover:text-foreground",
               )}>
-              <Icon className="h-3.5 w-3.5" />
+              {view === key && <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-primary" />}
+              <Icon className="h-5 w-5" />
               {label}
             </button>
-          ))}
-        </nav>
-      </div>
-    </header>
+        ))}
+      </nav>
+    </>
   );
 }

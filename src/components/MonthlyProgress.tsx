@@ -5,12 +5,11 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DailyEntry } from "@/lib/sadhana-types";
 import { getEntriesForMonth, StorageCtx } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
-export function MonthlyProgress({ ctx }: { ctx: StorageCtx }) {
+export function MonthlyProgress({ ctx, onOpenDate }: { ctx: StorageCtx; onOpenDate: (date: string) => void }) {
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [entries, setEntries] = useState<DailyEntry[]>([]);
 
@@ -43,16 +42,18 @@ export function MonthlyProgress({ ctx }: { ctx: StorageCtx }) {
       daysLogged: entries.length,
       rounds: sum((e) => e.japaRounds),
       mangala: entries.filter((e) => e.mangalaArati).length,
+      morningAttendance: sum((e) => [e.mangalaArati, e.tulasiArati, e.darshanArati, e.guruPuja, e.bhagavatamClass].filter(Boolean).length),
       reading: sum((e) => e.spBooksMinutes),
       hearing: sum((e) => e.spLecturesMinutes + e.guruMaharajaMinutes + e.rspLecturesMinutes),
       bd: sum((e) => e.bdHours),
+      bdDays: entries.filter((e) => e.bookDistribution).length,
       score: sum(dayScore),
     };
   }, [entries]);
 
   return (
-    <div className="space-y-4">
-      <div className="glass-control flex items-center justify-between rounded-2xl p-2">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1 py-1">
         <Button variant="ghost" size="icon" aria-label="Previous month"
           onClick={() => setMonth((m) => addMonths(m, -1))}>
           <ChevronLeft className="h-5 w-5" />
@@ -67,9 +68,8 @@ export function MonthlyProgress({ ctx }: { ctx: StorageCtx }) {
         </Button>
       </div>
 
-      <Card className="rounded-3xl">
-        <CardContent className="p-4">
-          <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground">
+      <section className="quiet-surface rounded-2xl p-3">
+          <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-muted-foreground">
             {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <div key={i}>{d}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -78,34 +78,57 @@ export function MonthlyProgress({ ctx }: { ctx: StorageCtx }) {
               const key = format(d, "yyyy-MM-dd");
               const e = byDate[key];
               return (
-                <div key={key}
+                <button key={key}
+                  type="button"
+                  onClick={() => onOpenDate(key)}
+                  aria-label={`${format(d, "EEEE, MMMM d")}${e ? `, submitted, score ${dayScore(e)} out of 75` : ", not submitted"}. Open day`}
                   title={e ? `${key}: ${dayScore(e)} / 75` : key}
                   className={cn(
-                    "pressable flex aspect-square items-center justify-center rounded-xl border border-white/30 text-xs font-semibold shadow-[0_1px_0_hsl(0_0%_100%_/_0.28)_inset]",
-                    e ? heat(dayScore(e)) : "bg-card/45 text-muted-foreground",
+                    "pressable relative flex aspect-square min-h-10 items-center justify-center rounded-lg border text-sm font-semibold shadow-[0_1px_0_hsl(0_0%_100%_/_0.30)_inset] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    e ? `${heat(dayScore(e))} border-white/35` : "border-border/45 bg-card/55 text-muted-foreground",
                   )}>
                   {format(d, "d")}
-                </div>
+                  {e && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-current opacity-70" />}
+                </button>
               );
             })}
           </div>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Deeper green means a stronger day (wake + japa + bed, out of 75).
-          </p>
-        </CardContent>
-      </Card>
+          <div className="mt-3 grid grid-cols-4 gap-1 text-center text-[10px] text-muted-foreground" aria-label="Calendar score legend">
+            {[
+              ["No entry", "bg-card"],
+              ["Low", "bg-primary/20"],
+              ["Steady", "bg-primary/70"],
+              ["Strong", "bg-success"],
+            ].map(([label, tone]) => (
+              <span key={label} className="flex flex-col items-center gap-1">
+                <span className={cn("h-2.5 w-8 rounded-full border border-border/50", tone)} />
+                {label}
+              </span>
+            ))}
+          </div>
+      </section>
 
-      <Card className="rounded-3xl">
-        <CardHeader className="pb-2"><CardTitle className="text-xl">Monthly totals</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3 text-sm">
-          <div className="glass-control rounded-2xl p-3"><div className="text-muted-foreground">Days logged</div><div className="text-2xl font-semibold tabular-nums">{totals.daysLogged}</div></div>
-          <div className="glass-control rounded-2xl p-3"><div className="text-muted-foreground">Rounds chanted</div><div className="text-2xl font-semibold tabular-nums">{totals.rounds}</div></div>
-          <div className="glass-control rounded-2xl p-3"><div className="text-muted-foreground">Mangala Aratis</div><div className="text-2xl font-semibold tabular-nums">{totals.mangala}</div></div>
-          <div className="glass-control rounded-2xl p-3"><div className="text-muted-foreground">Reading (min)</div><div className="text-2xl font-semibold tabular-nums">{totals.reading}</div></div>
-          <div className="glass-control rounded-2xl p-3"><div className="text-muted-foreground">Hearing (min)</div><div className="text-2xl font-semibold tabular-nums">{totals.hearing}</div></div>
-          <div className="glass-control rounded-2xl p-3"><div className="text-muted-foreground">BD hours</div><div className="text-2xl font-semibold tabular-nums">{totals.bd}</div></div>
-        </CardContent>
-      </Card>
+      <section className="quiet-surface overflow-hidden rounded-2xl" aria-labelledby="monthly-totals">
+        <h2 id="monthly-totals" className="px-4 pb-2 pt-4 font-display text-2xl font-semibold">Monthly totals</h2>
+        {[
+          { title: "Practice", items: [["Logged days", totals.daysLogged], ["Total rounds", totals.rounds], ["Core score", `${totals.score} pts`]] },
+          { title: "Attendance", items: [["Mangala Arati", `${totals.mangala} days`], ["Morning items", totals.morningAttendance]] },
+          { title: "Study and hearing", items: [["Reading", `${totals.reading} min`], ["Lectures", `${totals.hearing} min`]] },
+          { title: "Seva", items: [["Book distribution", `${totals.bd} hrs`], ["BD attendance", `${totals.bdDays} days`]] },
+        ].map((group) => (
+          <div key={group.title} className="border-t border-border/55 px-4 py-3">
+            <h3 className="text-sm font-semibold text-primary">{group.title}</h3>
+            <div className={cn("mt-2 grid divide-x divide-border/60", group.items.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+              {group.items.map(([label, value]) => (
+                <div key={String(label)} className="px-3 first:pl-0 last:pr-0">
+                  <div className="text-xs text-muted-foreground">{label}</div>
+                  <div className="mt-0.5 text-xl font-semibold tabular-nums">{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }

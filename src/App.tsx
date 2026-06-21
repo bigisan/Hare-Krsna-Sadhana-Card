@@ -58,7 +58,8 @@ function Shell() {
         <Routes>
           <Route path="/" element={<DailyView ctx={ctx} wizardMode={wizardMode} allowCustomTime={allowCustomTime} />} />
           <Route path="/weekly" element={<WeeklyView ctx={ctx} />} />
-          <Route path="/monthly" element={<MonthlyProgress ctx={ctx} />} />
+          <Route path="/monthly" element={<MonthlyProgress ctx={ctx}
+            onOpenDate={(date) => navigate(`/?date=${date}`)} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

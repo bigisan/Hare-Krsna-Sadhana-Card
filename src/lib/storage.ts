@@ -155,6 +155,8 @@ export function entriesByDay(entries: DailyEntry[]): Partial<Record<string, Dail
 }
 
 // ---------- daily drafts (always device-local, resumable) ----------
+// Drafts intentionally stay separate from submitted entries, including for signed-in users.
+// This keeps partial answers out of weekly reports and the official PDF until Submit Day.
 
 export interface DailyDraft {
   step: number;

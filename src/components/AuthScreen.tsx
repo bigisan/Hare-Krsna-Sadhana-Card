@@ -23,17 +23,17 @@ export function AuthScreen() {
   };
 
   return (
-    <main className="soft-gradient-bg mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-10">
-      <div className="mb-8 text-center">
-        <div className="glass-control mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lift">
-          <span className="font-display text-4xl leading-none">S</span>
+    <main className="soft-gradient-bg mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-8">
+      <div className="mb-6 text-center">
+        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-xl border border-primary/30 bg-primary text-primary-foreground shadow-soft">
+          <span className="font-display text-3xl leading-none">S</span>
         </div>
-        <h1 className="font-display text-5xl font-semibold">Sadhana Card</h1>
+        <h1 className="font-display text-[2.75rem] font-semibold leading-none">Sadhana Card</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           A gentle companion for your daily practice
         </p>
       </div>
-      <Card className="rounded-3xl">
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-center">
             {mode === "signin" ? "Welcome back" : "Create your account"}
@@ -75,7 +75,7 @@ export function AuthScreen() {
               Continue as guest
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              Guest entries stay on this device only.
+              Use the full app on this device without an account. You can create a backup from Settings.
             </p>
           </div>
         </CardContent>

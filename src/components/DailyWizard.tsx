@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { AttendanceChecklist, JapaRoundsControl, MinuteEntryControl } from "@/components/DailyEntryControls";
 import {
   BED_PRESETS,
   JAPA_PRESETS,
@@ -17,6 +18,7 @@ import {
   scoreBedTime, scoreWakeUp, scoreJapa, emptyEntry,
 } from "@/lib/sadhana-types";
 import { saveDraft, getDraft, clearDraft } from "@/lib/storage";
+import { formatTimingDisplay } from "@/lib/time-display";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -38,7 +40,7 @@ function ScoreChip({ score }: { score: number }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-white/35 px-3 py-1 text-sm font-semibold shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]",
+        "inline-flex items-center rounded-full border border-white/35 px-2 py-1 text-xs font-semibold shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]",
         score >= 20 ? "bg-success/15 text-success" :
         score >= 10 ? "bg-accent text-accent-foreground" :
         "bg-secondary/80 text-secondary-foreground",
@@ -173,7 +175,7 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
         return (
           <div className="space-y-5">
             <TimePresetSelector
-              title="Japa"
+              title="Japa completion"
               value={entry.japaCompletionTime}
               score={entry.japaScore}
               presets={JAPA_PRESETS}
@@ -181,17 +183,7 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
               onPresetSelect={(preset) => set({ japaCompletionTime: preset.time, japaScore: preset.score })}
               onCustomTimeChange={(time) => set({ japaCompletionTime: time, japaScore: scoreJapa(time) })}
             />
-            <div className="space-y-1 text-center">
-              <label htmlFor="rounds" className="block text-sm text-muted-foreground">Rounds chanted</label>
-              <Input
-                id="rounds"
-                type="number"
-                min={0}
-                value={entry.japaRounds}
-                onChange={(e) => set({ japaRounds: Number(e.target.value) })}
-                className="mx-auto w-28 text-center"
-              />
-            </div>
+            <JapaRoundsControl value={entry.japaRounds} onChange={(japaRounds) => set({ japaRounds })} />
             <Button size="lg" className="w-full" disabled={!entry.japaCompletionTime} onClick={next}>
               Continue
             </Button>
@@ -213,28 +205,10 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
             <h2 className="text-center font-display text-3xl font-semibold">
               What did you attend on {dayName}?
             </h2>
-            <div className="flex flex-wrap justify-center gap-2">
-              {ATTENDANCE_ITEMS.map(({ key, label }) => {
-                const on = entry[key] as boolean;
-                return (
-                  <button
-                    key={key as string}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => set({ [key]: !on } as Partial<DailyEntry>)}
-                    className={cn(
-                    "pressable min-h-10 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      on
-                        ? "border-primary bg-primary text-primary-foreground shadow-[0_8px_18px_hsl(82_24%_24%_/_0.18)]"
-                        : "border-white/40 bg-card/60 hover:bg-accent",
-                    )}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            <AttendanceChecklist
+              entry={entry}
+              onToggle={(key) => set({ [key]: !entry[key] } as Partial<DailyEntry>)}
+            />
             {entry.bookDistribution && (
               <div className="space-y-1 text-center">
                 <label htmlFor="bdh" className="block text-sm text-muted-foreground">
@@ -260,19 +234,19 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
           <div className="space-y-5 text-center">
             <h2 className="font-display text-3xl font-semibold">Review and offer</h2>
             <div className="grid grid-cols-3 gap-3 text-sm">
-              <div className="glass-control rounded-xl p-3">
+              <div className="glass-control rounded-xl p-2">
                 <div className="text-muted-foreground">Wake</div>
-                <div className="text-lg font-semibold">{entry.wakeUpTime ?? "–"}</div>
+                <div className="my-1 min-h-8 text-xs font-semibold leading-tight">{formatTimingDisplay("wake", entry.wakeUpTime, entry.wakeUpScore)}</div>
                 <ScoreChip score={entry.wakeUpScore} />
               </div>
-              <div className="glass-control rounded-xl p-3">
+              <div className="glass-control rounded-xl p-2">
                 <div className="text-muted-foreground">Japa</div>
-                <div className="text-lg font-semibold">{entry.japaCompletionTime ?? "–"}</div>
+                <div className="my-1 min-h-8 text-xs font-semibold leading-tight">{formatTimingDisplay("japa", entry.japaCompletionTime, entry.japaScore)}</div>
                 <ScoreChip score={entry.japaScore} />
               </div>
-              <div className="glass-control rounded-xl p-3">
+              <div className="glass-control rounded-xl p-2">
                 <div className="text-muted-foreground">Bed</div>
-                <div className="text-lg font-semibold">{entry.bedTime ?? "–"}</div>
+                <div className="my-1 min-h-8 text-xs font-semibold leading-tight">{formatTimingDisplay("sleep", entry.bedTime, entry.bedTimeScore)}</div>
                 <ScoreChip score={entry.bedTimeScore} />
               </div>
             </div>
@@ -281,7 +255,7 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
               day score {total} / 75
             </p>
             <Button size="lg" className="w-full" onClick={submit} disabled={saving}>
-              {saving ? "Offering…" : `Submit ${entryTitle}`}
+              {saving ? "Submitting…" : "Submit Day"}
             </Button>
           </div>
         );
@@ -289,14 +263,13 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
       default: {
         const key = step as keyof DailyEntry;
         return (
-          <div className="space-y-5 text-center">
-            <h2 className="font-display text-2xl font-semibold">{MINUTE_LABELS[step]}</h2>
-            <Input
-              type="number"
-              min={0}
+          <div className="space-y-5">
+            <h2 className="text-center font-display text-2xl font-semibold">{MINUTE_LABELS[step]}</h2>
+            <MinuteEntryControl
+              id={`wizard-${String(key)}`}
+              label="Minutes"
               value={entry[key] as number}
-              onChange={(e) => set({ [key]: Number(e.target.value) } as Partial<DailyEntry>)}
-              className="mx-auto w-32 text-center text-lg"
+              onChange={(value) => set({ [key]: value } as Partial<DailyEntry>)}
             />
             <Button size="lg" className="w-full" onClick={next}>Continue</Button>
           </div>
@@ -308,20 +281,20 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
 
   return (
     <div className="space-y-4">
-      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/70 shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]" role="progressbar"
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary/70 shadow-[0_1px_0_hsl(0_0%_100%_/_0.35)_inset]" role="progressbar"
         aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-full bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(43_42%_46%))] transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
       </div>
-      <div className="glass-control flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-xs text-muted-foreground">
+      <div className="quiet-surface flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-          {draftSavedAt ? "Progress saved on this device" : "Progress saves on this device"}
+          {draftSavedAt ? "Draft saved on this device" : "Draft autosaves on this device"}
         </span>
         <Button variant="ghost" size="sm" onClick={saveProgress}>
-          Save
+          Save Draft
         </Button>
       </div>
-      <Card className="rounded-3xl">
+      <Card className="rounded-2xl">
         <CardContent className="relative pt-8">
           {stepIndex > 0 && (
             <button
@@ -333,6 +306,9 @@ export function DailyWizard({ date, dayOfWeek, existing, allowCustomTime, onSubm
             </button>
           )}
           {body}
+          <p className="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
+            Drafts stay on this device until submitted. Submitted days appear in Weekly and PDF export.
+          </p>
         </CardContent>
       </Card>
     </div>

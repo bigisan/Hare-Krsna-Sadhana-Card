@@ -48,45 +48,43 @@
   * { @apply border-border; }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background:
-      linear-gradient(180deg, hsl(48 25% 88%) 0%, hsl(var(--background)) 32%, hsl(42 19% 87%) 100%);
+    background: linear-gradient(180deg, hsl(43 30% 96%) 0%, hsl(var(--background)) 38%, hsl(40 22% 90%) 100%);
+    min-width: 320px;
   }
   .dark body {
-    background:
-      radial-gradient(circle at 50% -10%, hsl(82 18% 22% / 0.34), transparent 42%),
-      linear-gradient(180deg, hsl(230 24% 9%) 0%, hsl(var(--background)) 52%, hsl(230 20% 8%) 100%);
+    background: linear-gradient(180deg, hsl(230 22% 12%) 0%, hsl(var(--background)) 52%, hsl(230 20% 8%) 100%);
   }
   .font-display {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     font-feature-settings: "ss01", "liga";
   }
 }
 
 @layer utilities {
   .soft-gradient-bg {
-    background:
-      radial-gradient(circle at 18% 0%, hsl(48 42% 92% / 0.86), transparent 34%),
-      radial-gradient(circle at 90% 8%, hsl(82 24% 72% / 0.34), transparent 32%),
-      linear-gradient(180deg, hsl(42 25% 91%), hsl(40 24% 93%) 46%, hsl(42 20% 87%));
+    background: linear-gradient(180deg, hsl(43 30% 96%), hsl(40 24% 93%) 48%, hsl(42 20% 89%));
   }
 
   .glass-panel {
-    @apply border border-white/45 bg-card/70 shadow-soft backdrop-blur-xl;
+    @apply border border-white/55 shadow-soft backdrop-blur-xl;
+    background-color: hsl(var(--card) / 0.88);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.44) inset,
       0 18px 45px hsl(40 20% 18% / 0.12);
   }
 
   .glass-card {
-    @apply border border-white/45 bg-card/80 shadow-soft backdrop-blur-md;
+    @apply border border-white/55 shadow-soft;
+    background-color: hsl(var(--card) / 0.96);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.42) inset,
       0 12px 34px hsl(40 20% 18% / 0.10);
   }
 
   .glass-control {
-    @apply border border-white/45 bg-card/60 shadow-soft backdrop-blur-lg;
+    @apply border border-white/55 shadow-soft;
+    background-color: hsl(var(--card) / 0.86);
     box-shadow:
       0 1px 0 hsl(0 0% 100% / 0.48) inset,
       0 8px 20px hsl(40 20% 18% / 0.08);
@@ -97,6 +95,21 @@
   }
 
   .safe-bottom-padding {
-    padding-bottom: max(4rem, env(safe-area-inset-bottom));
+    padding-bottom: max(7rem, calc(5.5rem + env(safe-area-inset-bottom)));
+  }
+
+  .app-top-bar {
+    @apply border-b border-white/55 shadow-[0_8px_24px_hsl(40_18%_18%_/_0.07)] backdrop-blur-2xl;
+    background-color: hsl(var(--background) / 0.88);
+  }
+
+  .quiet-surface {
+    @apply border border-border/55;
+    background-color: hsl(var(--card) / 0.88);
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.5) inset, 0 8px 24px hsl(40 20% 18% / 0.06);
+  }
+
+  .section-divider {
+    @apply border-t border-border/60;
   }
 }

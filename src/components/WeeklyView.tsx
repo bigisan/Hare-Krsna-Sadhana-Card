@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { addDays, addWeeks, format, startOfWeek } from "date-fns";
-import { ChevronLeft, ChevronRight, FileDown, Check, FileText, Share2, ShieldCheck } from "lucide-react";
+import { addDays, addWeeks, format } from "date-fns";
+import { ChevronDown, ChevronLeft, ChevronRight, FileDown, Check, FileText, Share2 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid,
 } from "recharts";
@@ -23,19 +23,21 @@ import {
 } from "@/lib/pdfDelivery";
 
 import { cn } from "@/lib/utils";
+import { startOfSadhanaWeek } from "@/lib/date-utils";
+import { formatTimingDisplay } from "@/lib/time-display";
 
-function PercentCard({ label, value }: { label: string; value: number }) {
+function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="glass-control rounded-2xl p-3 text-center">
-      <div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums">{Math.round(value)}%</div>
+    <div className="min-w-0 flex-1 px-2 py-2 text-center">
+      <div className="text-[11px] font-semibold text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-2xl font-semibold tabular-nums">{value}</div>
     </div>
   );
 }
 
 export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
   const { isGuest, user } = useAuth();
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
+  const [weekStart, setWeekStart] = useState(() => startOfSadhanaWeek(new Date()));
   const [tab, setTab] = useState<"log" | "report">("log");
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [lastEntries, setLastEntries] = useState<DailyEntry[]>([]);
@@ -69,8 +71,10 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
   const comparison = useMemo(() => compareWeeks(entries, lastEntries), [entries, lastEntries]);
   const { thisWeek, lastWeek } = comparison;
 
-  const overallPct =
-    ((thisWeek.wakeTotal + thisWeek.japaTotal + thisWeek.bedTotal) / (175 * 3)) * 100;
+  const coreTotal = thisWeek.wakeTotal + thisWeek.japaTotal + thisWeek.bedTotal;
+  const overallPct = Math.max(0, Math.min(100, (coreTotal / 525) * 100));
+  const roundsTotal = entries.reduce((total, entry) => total + entry.japaRounds, 0);
+  const hearingTotal = thisWeek.spLectureMinutes + thisWeek.gmLectureMinutes + thisWeek.rspLectureMinutes;
 
   const doExport = async () => {
     localStorage.setItem("sadhana:name", devoteeName);
@@ -87,6 +91,8 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
       });
       setPreparedPdf(pdf);
 
+      // iOS usually completes export in two taps: prepare the file, then invoke the
+      // native Share sheet. Keeping the prepared PDF also gives users a reliable retry.
       if (canSharePdf(pdf)) {
         try {
           await sharePdf(pdf);
@@ -139,9 +145,9 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* week navigator */}
-      <div className="glass-control flex items-center justify-between rounded-2xl p-2">
+      <div className="flex items-center justify-between px-1 py-1">
         <Button variant="ghost" size="icon" aria-label="Previous week"
           onClick={() => setWeekStart((w) => addWeeks(w, -1))}>
           <ChevronLeft className="h-5 w-5" />
@@ -159,13 +165,13 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
       </div>
 
       {/* sub-tabs */}
-      <div className="glass-control grid grid-cols-2 gap-1 rounded-2xl p-1" role="tablist" aria-label="Weekly sections">
+      <div className="quiet-surface grid grid-cols-2 gap-1 rounded-xl p-1" role="tablist" aria-label="Weekly sections">
         {(["log", "report"] as const).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
             className={cn(
               "pressable min-h-10 rounded-xl py-2 text-sm font-semibold capitalize",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              tab === t ? "bg-primary text-primary-foreground shadow-[0_10px_20px_hsl(82_24%_24%_/_0.20)]" : "text-secondary-foreground hover:bg-card/70",
+              tab === t ? "bg-primary text-primary-foreground shadow-soft" : "text-secondary-foreground hover:bg-card",
             )}>
             {t}
           </button>
@@ -176,108 +182,147 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
         <Card className="rounded-3xl"><CardContent className="py-10 text-center text-muted-foreground">Loading the week…</CardContent></Card>
       ) : tab === "log" ? (
         <>
-          <Card className="rounded-3xl">
-            <CardContent className="overflow-x-auto p-4">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-muted-foreground">
-                    <th className="p-1 text-left font-medium">Item</th>
-                    {DAY_KEYS.map((d) => <th key={d} className="p-1 font-medium">{d}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td className="p-1">Wake</td>{DAY_KEYS.map((d) => (
-                    <td key={d} className="p-1 text-center">{byDay[d]?.wakeUpTime ?? "·"}</td>))}</tr>
-                  <tr><td className="p-1">Japa</td>{DAY_KEYS.map((d) => (
-                    <td key={d} className="p-1 text-center">{byDay[d]?.japaCompletionTime ?? "·"}</td>))}</tr>
-                  <tr><td className="p-1">Bed</td>{DAY_KEYS.map((d) => (
-                    <td key={d} className="p-1 text-center">{byDay[d]?.bedTime ?? "·"}</td>))}</tr>
-                  <tr><td className="p-1">Rounds</td>{DAY_KEYS.map((d) => (
-                    <td key={d} className="p-1 text-center">{byDay[d]?.japaRounds ?? "·"}</td>))}</tr>
-                  {ATTENDANCE_ITEMS.map(({ key, label }) => (
-                    <tr key={key as string}>
-                      <td className="p-1">{label.replace(/\s*\(.*\)/, "")}</td>
-                      {DAY_KEYS.map((d) => (
-                        <td key={d} className="p-1 text-center">
-                          {byDay[d]?.[key] ? <Check className="mx-auto h-3.5 w-3.5 text-success" /> : "·"}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                  {STUDY_ITEMS.map(({ key, label }) => (
-                    <tr key={key as string}>
-                      <td className="p-1">{label} (min)</td>
-                      {DAY_KEYS.map((d) => (
-                        <td key={d} className="p-1 text-center">{(byDay[d]?.[key] as number) || "·"}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-2 gap-3">
-            <PercentCard label="Wake-up" value={(thisWeek.wakeTotal / 175) * 100} />
-            <PercentCard label="Japa" value={(thisWeek.japaTotal / 175) * 100} />
-            <PercentCard label="Bed-time" value={(thisWeek.bedTotal / 175) * 100} />
-            <PercentCard label="Overall" value={overallPct} />
-          </div>
-
-          <Card className="overflow-hidden rounded-3xl border-primary/25 bg-[linear-gradient(145deg,hsl(82_22%_31%),hsl(35_28%_18%))] text-primary-foreground shadow-lift">
-            <CardContent className="space-y-4 p-5">
-              <div className="flex items-start justify-between gap-4">
+          <section className="quiet-surface overflow-hidden rounded-2xl" aria-labelledby="weekly-status">
+            <div className="px-4 pb-3 pt-4">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-xs font-semibold text-white/85">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    PDF export
-                  </div>
-                  <h3 className="mt-3 font-display text-3xl font-semibold leading-none">Official card, ready to share</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/72">
-                    Fills the Brahmacari Sadhana Card with this week&apos;s scores, attendance, totals, and percentages.
-                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground">Weekly status</p>
+                  <h2 id="weekly-status" className="mt-1 font-display text-2xl font-semibold leading-none">
+                    {thisWeek.daysLogged ? "A steady week is forming." : "Begin this week's card."}
+                  </h2>
                 </div>
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-white/20 bg-white/12">
-                  <FileText className="h-6 w-6" />
+                <span className="rounded-full bg-primary/12 px-2.5 py-1 text-xs font-semibold text-primary">
+                  {Math.round(overallPct)}%
+                </span>
+              </div>
+            </div>
+            <div className="flex divide-x divide-border/70 border-y border-border/55 px-2 py-1">
+              <SummaryStat label="Submitted" value={`${thisWeek.daysLogged}/7`} />
+              <SummaryStat label="Core score" value={`${coreTotal}/525`} />
+              <SummaryStat label="Rounds" value={String(roundsTotal)} />
+            </div>
+            <div className="grid grid-cols-3 gap-2 px-4 py-3 text-center">
+              <div><p className="text-[11px] text-muted-foreground">Mangala Arati</p><p className="font-semibold">{thisWeek.morningProgramDays} days</p></div>
+              <div><p className="text-[11px] text-muted-foreground">Reading</p><p className="font-semibold">{thisWeek.readingMinutes} min</p></div>
+              <div><p className="text-[11px] text-muted-foreground">Hearing</p><p className="font-semibold">{hearingTotal} min</p></div>
+            </div>
+          </section>
+
+          <section className="quiet-surface rounded-2xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/[0.12] text-primary">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-display text-2xl font-semibold leading-none">Official Sadhana Card PDF</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">Prepare the ISKCON Sydney card for this week.</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="mt-4 grid grid-cols-2 gap-2">
                 <Input placeholder="Your name" value={devoteeName}
-                  onChange={(e) => setDevoteeName(e.target.value)} aria-label="Your name"
-                  className="border-white/20 bg-white/12 text-white placeholder:text-white/55 focus-visible:ring-white/45" />
+                  onChange={(e) => setDevoteeName(e.target.value)} aria-label="Your name" />
                 <Input placeholder="Mentor" value={mentorName}
-                  onChange={(e) => setMentorName(e.target.value)} aria-label="Mentor"
-                  className="border-white/20 bg-white/12 text-white placeholder:text-white/55 focus-visible:ring-white/45" />
+                  onChange={(e) => setMentorName(e.target.value)} aria-label="Mentor" />
               </div>
-              <Button className="w-full bg-white text-foreground shadow-[0_12px_28px_hsl(0_0%_0%_/_0.20)] hover:bg-white/92" onClick={doExport} disabled={exporting || entries.length === 0}>
+              <Button className="mt-3 w-full" onClick={doExport} disabled={exporting || entries.length === 0}>
                 <FileDown className="h-4 w-4" />
-                {exporting ? "Preparing card…" : "Export week to card (PDF)"}
+                {exporting ? "Preparing PDF…" : "Prepare PDF"}
               </Button>
               {preparedPdf && (
-                <div className="rounded-2xl border border-white/20 bg-white/10 p-3">
-                  <p className="mb-2 text-center text-xs font-medium text-white/80">Your PDF is ready.</p>
+                <div className="mt-3 rounded-xl border border-success/25 bg-success/10 p-3">
+                  <p className="mb-2 text-center text-xs font-medium text-success">Your PDF is ready.</p>
                   <Button
                     type="button"
                     variant="secondary"
-                    className="w-full border-white/20 bg-white/90 text-foreground hover:bg-white"
+                    className="w-full"
                     onClick={sharePreparedPdf}
                   >
                     <Share2 className="h-4 w-4" />
-                    Share or save PDF
+                    Share or Save PDF
                   </Button>
                 </div>
               )}
               {entries.length === 0 && (
-                <p className="text-center text-xs text-white/62">
+                <p className="mt-2 text-center text-xs text-muted-foreground">
                   Log at least one day this week to export.
                 </p>
               )}
-            </CardContent>
-          </Card>
+              {isGuest && (
+                <p className="mt-3 rounded-xl bg-secondary/50 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                  Your entries are saved on this device. Back up regularly or sign in to sync.
+                </p>
+              )}
+          </section>
+
+          <section aria-labelledby="week-days">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <h2 id="week-days" className="text-sm font-semibold">Sunday to Saturday</h2>
+              <span className="text-xs text-muted-foreground">Swipe to review</span>
+            </div>
+            <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {DAY_KEYS.map((day, index) => {
+                const entry = byDay[day];
+                const date = addDays(weekStart, index);
+                const score = entry ? entry.wakeUpScore + entry.japaScore + entry.bedTimeScore : 0;
+                return (
+                  <article key={day} className="quiet-surface w-[10.75rem] shrink-0 snap-start rounded-2xl p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-semibold text-primary">{format(date, "EEE")}</p>
+                        <p className="text-sm font-semibold">{format(date, "d MMM")}</p>
+                      </div>
+                      <span className={cn("rounded-full px-2 py-1 text-xs font-semibold", entry ? "bg-success/12 text-success" : "bg-secondary text-muted-foreground")}>
+                        {entry ? `${score}/75` : "Open"}
+                      </span>
+                    </div>
+                    {entry ? (
+                      <div className="mt-3 space-y-2 text-xs">
+                        <p><span className="block text-[10px] text-muted-foreground">Wake</span><span className="block font-medium leading-tight">{formatTimingDisplay("wake", entry.wakeUpTime, entry.wakeUpScore)}</span></p>
+                        <p><span className="block text-[10px] text-muted-foreground">Japa</span><span className="block font-medium leading-tight">{entry.japaRounds} rounds</span></p>
+                        <p><span className="block text-[10px] text-muted-foreground">Sleep</span><span className="block font-medium leading-tight">{formatTimingDisplay("sleep", entry.bedTime, entry.bedTimeScore)}</span></p>
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">No submitted card for this day.</p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <details className="group quiet-surface overflow-hidden rounded-2xl">
+            <summary className="pressable flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              Full weekly log
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="overflow-x-auto border-t border-border/55">
+              <table className="w-full min-w-[760px] text-[11px]">
+                <thead className="bg-secondary/45 text-muted-foreground">
+                  <tr><th className="sticky left-0 z-10 w-36 bg-secondary p-2 text-left">Item</th>{DAY_KEYS.map((day) => <th key={day} className="p-2">{day}</th>)}</tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {([
+                    ["Wake", (entry: DailyEntry) => formatTimingDisplay("wake", entry.wakeUpTime, entry.wakeUpScore)],
+                    ["Japa", (entry: DailyEntry) => formatTimingDisplay("japa", entry.japaCompletionTime, entry.japaScore)],
+                    ["Sleep", (entry: DailyEntry) => formatTimingDisplay("sleep", entry.bedTime, entry.bedTimeScore)],
+                    ["Rounds", (entry: DailyEntry) => String(entry.japaRounds)],
+                  ] as Array<[string, (entry: DailyEntry) => string]>).map(([label, value]) => (
+                    <tr key={label}><td className="sticky left-0 bg-card p-2 font-semibold">{label}</td>{DAY_KEYS.map((day) => <td key={day} className="p-2 text-center">{byDay[day] ? value(byDay[day]!) : "·"}</td>)}</tr>
+                  ))}
+                  {ATTENDANCE_ITEMS.map(({ key, label }) => (
+                    <tr key={key as string}><td className="sticky left-0 bg-card p-2 font-medium">{label.replace(/\s*\(.*\)/, "")}</td>{DAY_KEYS.map((day) => <td key={day} className="p-2 text-center">{byDay[day]?.[key] ? <Check className="mx-auto h-3.5 w-3.5 text-success" /> : "·"}</td>)}</tr>
+                  ))}
+                  {STUDY_ITEMS.map(({ key, label }) => (
+                    <tr key={key as string}><td className="sticky left-0 bg-card p-2 font-medium">{label} (min)</td>{DAY_KEYS.map((day) => <td key={day} className="p-2 text-center">{(byDay[day]?.[key] as number) || "·"}</td>)}</tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
         </>
       ) : (
         <>
-          <Card className="rounded-3xl">
+          <Card className="rounded-2xl">
             <CardHeader className="pb-2"><CardTitle className="text-xl">Scores: this week vs last</CardTitle></CardHeader>
             <CardContent className="h-56 p-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -293,7 +338,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl">
+          <Card className="rounded-2xl">
             <CardHeader className="pb-2"><CardTitle className="text-xl">Hearing, reading, attendance</CardTitle></CardHeader>
             <CardContent className="h-64 p-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -312,7 +357,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
 
           <div className="space-y-3">
             {pramanasForComparison(comparison).map((p) => (
-              <Card key={p.id} className="rounded-3xl">
+              <Card key={p.id} className="rounded-2xl">
                 <CardContent className="space-y-2 p-5">
                   <p className="font-display text-lg italic leading-snug">"{p.text}"</p>
                   <p className="text-xs font-medium text-muted-foreground">{p.reference}</p>

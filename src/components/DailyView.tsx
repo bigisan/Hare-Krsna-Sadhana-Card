@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { addDays, addWeeks, format, startOfWeek, subDays } from "date-fns";
+import { addDays, addWeeks, format, isValid, parseISO, subDays } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DailyWizard } from "@/components/DailyWizard";
@@ -12,6 +13,7 @@ import {
   StorageCtx, getDailyEntry, saveDailyEntry, getEntriesForWeek,
 } from "@/lib/storage";
 import { bannerPramana, Pramana } from "@/lib/pramanas";
+import { startOfSadhanaWeek } from "@/lib/date-utils";
 
 export function DailyView({
   ctx,
@@ -22,7 +24,12 @@ export function DailyView({
   wizardMode: boolean;
   allowCustomTime: boolean;
 }) {
-  const [date, setDate] = useState(() => new Date());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedDate = searchParams.get("date");
+  const [date, setDate] = useState(() => {
+    const parsed = requestedDate ? parseISO(requestedDate) : null;
+    return parsed && isValid(parsed) ? parsed : new Date();
+  });
   const [existing, setExisting] = useState<DailyEntry | null>(null);
   const [previousEntry, setPreviousEntry] = useState<DailyEntry | null>(null);
   const [weekEntries, setWeekEntries] = useState<DailyEntry[]>([]);
@@ -32,8 +39,13 @@ export function DailyView({
   const dateStr = format(date, "yyyy-MM-dd");
   const dayLabel = format(date, "EEEE");
   const dayOfWeek = format(date, "EEE").toUpperCase();
-  const selectedWeekStart = useMemo(() => startOfWeek(date, { weekStartsOn: 0 }), [date]);
+  const selectedWeekStart = useMemo(() => startOfSadhanaWeek(date), [date]);
   const selectedWeekStartStr = format(selectedWeekStart, "yyyy-MM-dd");
+
+  const selectDate = (nextDate: Date) => {
+    setDate(nextDate);
+    setSearchParams({ date: format(nextDate, "yyyy-MM-dd") }, { replace: true });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -59,8 +71,8 @@ export function DailyView({
   // and the last 3 days show a regression.
   useEffect(() => {
     let cancelled = false;
-    const thisWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 0 }), "yyyy-MM-dd");
-    const lastWeekStart = format(addWeeks(startOfWeek(new Date(), { weekStartsOn: 0 }), -1), "yyyy-MM-dd");
+    const thisWeekStart = format(startOfSadhanaWeek(new Date()), "yyyy-MM-dd");
+    const lastWeekStart = format(addWeeks(startOfSadhanaWeek(new Date()), -1), "yyyy-MM-dd");
     Promise.all([getEntriesForWeek(ctx, thisWeekStart), getEntriesForWeek(ctx, lastWeekStart)])
       .then(([cur, prev]) => {
         if (cancelled || cur.length === 0 || prev.length === 0) return;
@@ -83,18 +95,18 @@ export function DailyView({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="glass-control flex items-center justify-between rounded-2xl p-2">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1 py-1">
         <Button variant="ghost" size="icon" aria-label="Previous day"
-          onClick={() => setDate((d) => addDays(d, -1))}>
+          onClick={() => selectDate(addDays(date, -1))}>
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <div className="text-center">
-          <div className="font-display text-2xl font-semibold leading-none">{format(date, "EEEE")}</div>
+          <div className="font-display text-[1.75rem] font-semibold leading-none">{format(date, "EEEE")}</div>
           <div className="mt-1 text-xs font-medium text-muted-foreground">{format(date, "MMMM d, yyyy")}</div>
         </div>
         <Button variant="ghost" size="icon" aria-label="Next day"
-          onClick={() => setDate((d) => addDays(d, 1))}>
+          onClick={() => selectDate(addDays(date, 1))}>
           <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
