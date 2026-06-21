@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addWeeks, format } from "date-fns";
-import { ChevronDown, ChevronLeft, ChevronRight, FileDown, Check, FileText, Share2 } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Download, ExternalLink, FileDown, Check, FileText, Share2 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid,
 } from "recharts";
@@ -52,6 +52,7 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setPreparedPdf(null);
     Promise.all([
       getEntriesForWeek(ctx, weekStartStr),
       getEntriesForWeek(ctx, format(addWeeks(weekStart, -1), "yyyy-MM-dd")),
@@ -90,24 +91,11 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
         days: byDay,
       });
       setPreparedPdf(pdf);
-
-      // iOS usually completes export in two taps: prepare the file, then invoke the
-      // native Share sheet. Keeping the prepared PDF also gives users a reliable retry.
-      if (canSharePdf(pdf)) {
-        try {
-          await sharePdf(pdf);
-          toast.success("Your sadhana card is ready to share with your mentor. Hare Krishna 🙏");
-          return;
-        } catch (error) {
-          if (error instanceof DOMException && error.name === "AbortError") return;
-          toast.info("Your PDF is ready. Tap Share or save PDF below.");
-          return;
-        }
-      }
-
-      downloadPdf(pdf);
-      toast.success("Your sadhana card PDF has been downloaded. Hare Krishna 🙏");
-    } catch {
+      // iOS requires the native Share sheet to open directly from a user tap. PDF
+      // generation is asynchronous, so sharing is deliberately a separate second tap.
+      toast.success("Your PDF is ready. Tap Share or Save PDF.");
+    } catch (error) {
+      console.error("Sadhana card PDF preparation failed", error);
       toast.error("The card export didn't complete; please try again. Hare Krishna 🙏");
     } finally {
       setExporting(false);
@@ -118,17 +106,24 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
     if (!preparedPdf) return;
 
     try {
-      if (canSharePdf(preparedPdf)) {
-        await sharePdf(preparedPdf);
-      } else {
-        openPdf(preparedPdf);
-        toast.info("The PDF is open. Use your browser's Share button to save it to Files.");
-      }
+      await sharePdf(preparedPdf);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
-        toast.error("The PDF couldn't open. Please try again.");
+        toast.error("Sharing was unavailable. Tap Open PDF instead.");
       }
     }
+  };
+
+  const openPreparedPdf = () => {
+    if (!preparedPdf) return;
+    openPdf(preparedPdf);
+    toast.info("Use the browser Share button to save the PDF to Files.");
+  };
+
+  const downloadPreparedPdf = () => {
+    if (!preparedPdf) return;
+    downloadPdf(preparedPdf);
+    toast.success("Your sadhana card PDF has been downloaded.");
   };
 
   const compareData = [
@@ -224,27 +219,35 @@ export function WeeklyView({ ctx }: { ctx: StorageCtx }) {
                 <Input placeholder="Mentor" value={mentorName}
                   onChange={(e) => setMentorName(e.target.value)} aria-label="Mentor" />
               </div>
-              <Button className="mt-3 w-full" onClick={doExport} disabled={exporting || entries.length === 0}>
+              <Button className="mt-3 w-full" onClick={doExport} disabled={exporting}>
                 <FileDown className="h-4 w-4" />
                 {exporting ? "Preparing PDF…" : "Prepare PDF"}
               </Button>
               {preparedPdf && (
                 <div className="mt-3 rounded-xl border border-success/25 bg-success/10 p-3">
                   <p className="mb-2 text-center text-xs font-medium text-success">Your PDF is ready.</p>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={sharePreparedPdf}
-                  >
-                    <Share2 className="h-4 w-4" />
-                    Share or Save PDF
-                  </Button>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {canSharePdf(preparedPdf) ? (
+                      <Button type="button" variant="secondary" onClick={sharePreparedPdf}>
+                        <Share2 className="h-4 w-4" />
+                        Share or Save PDF
+                      </Button>
+                    ) : (
+                      <Button type="button" variant="secondary" onClick={downloadPreparedPdf}>
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    )}
+                    <Button type="button" variant="outline" onClick={openPreparedPdf}>
+                      <ExternalLink className="h-4 w-4" />
+                      Open PDF
+                    </Button>
+                  </div>
                 </div>
               )}
               {entries.length === 0 && (
                 <p className="mt-2 text-center text-xs text-muted-foreground">
-                  Log at least one day this week to export.
+                  No submitted days yet. You can prepare the blank official card, or submit a day first to include its progress.
                 </p>
               )}
               {isGuest && (
